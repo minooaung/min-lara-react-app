@@ -8,17 +8,32 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 
 use App\Http\Resources\UserResource;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return UserResource::collection(
-            User::query()->orderBy('id', 'desc')->paginate(10)
-        );
+        $searchString = $request->query('search');
+
+        $users = User::where(function($query) use ($searchString) {
+                $query->where('id', 'like', "%{$searchString}%")
+                    ->orWhere('name', 'like', "%{$searchString}%")
+                    ->orWhere('email', 'like', "%{$searchString}%");
+            })
+            ->orderBy("id","desc")
+            ->paginate(10);
+
+//        return UserResource::collection(
+//            User::query()->orderBy('id', 'desc')->paginate(10)
+//        );
+
+        //print_r(UserResource::collection($users));exit;
+
+        return response()->json($users);
     }
 
     /**
@@ -50,7 +65,7 @@ class UserController extends Controller
         if (isset($data['password'])) {
             $data['password'] = bcrypt($data['password']);
         }
-        
+
         $user->update($data);
 
         return new UserResource($user);

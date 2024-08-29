@@ -4,15 +4,57 @@ import { Link } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 
 export default function Users() {
-
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const {setNotification} = useStateContext()
+    const {setNotification} = useStateContext();
+
+    //-----------------
+    const [paginationLinks, setPaginationLinks] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    //const [lastPage, setLastPage] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(0); // State to hold the total number of users
+    const [fromUser, setFromUser] = useState(0); // Starting user number on the current page
+    const [toUser, setToUser] = useState(0); // Ending user number on the current page
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const fetchUsers = async (page = 1) => {
+        try {
+            setLoading(true)
+            const response = await axiosClient.get('/users', {
+                params: {
+                    page,
+                    search: searchQuery
+                }
+            });
+
+            setUsers(response.data.data);
+            setPaginationLinks(response.data.links);
+            setCurrentPage(response.data.current_page);
+            //setLastPage(response.data.last_page);
+            setTotalUsers(response.data.total);
+            setFromUser(response.data.from);
+            setToUser(response.data.to);
+
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        getUsers();
-    }, [])
+        fetchUsers(currentPage);
+    }, [currentPage, searchQuery]);
+
+    const handlePageChange = (url) => {
+        if (url) {
+            const page = new URL(url).searchParams.get('page');
+            setCurrentPage(Number(page));
+        }
+    };
+    //-----------------
 
     const onDelete = (u) => {
         if (!window.confirm(`Are you sure you want to delete [${u.name}]?`)) {
@@ -20,24 +62,11 @@ export default function Users() {
         }
 
         axiosClient.delete(`/users/${u.id}`)
-        .then(() => {
-            setNotification('User was successfully deleted')
-            getUsers();
-        })
-    } 
+            .then(() => {
+                setNotification('User was successfully deleted')
 
-    const getUsers = () => {
-        setLoading(true);
-
-        axiosClient.get('/users')
-        .then(({data}) => {
-            setLoading(false);
-            console.log(data);
-            setUsers(data.data);
-        })
-        .catch(() => {
-            setLoading(false);
-        })
+                fetchUsers(1);
+            })
     }
 
     return (
@@ -47,6 +76,12 @@ export default function Users() {
                 <Link to="/users/new" className="btn-add">Add new</Link>
             </div>
             <div className="card animated fadeInDown">
+                <input type="text"
+                       className="search-filter-field"
+                       placeholder="Search"
+                       onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
                 <table>
                     <thead>
                     <tr>
@@ -84,6 +119,22 @@ export default function Users() {
                         </tbody>
                     }
                 </table>
+                <div className="pagination-container">
+                    <div>Showing {fromUser} to {toUser} of {totalUsers} users</div>
+                    <div className="pagination">
+                        {paginationLinks.map((link, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handlePageChange(link.url)}
+                                disabled={!link.url || link.active}
+                                style={{ margin: '0 5px', fontWeight: link.active ? 'bold' : 'normal' }}
+                            >
+                                {link.label.replace(/&laquo;|&raquo;/g, '')}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
             </div>
         </div>
     )
