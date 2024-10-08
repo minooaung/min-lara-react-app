@@ -27,8 +27,6 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('/users', UserController::class);
 });
 
-
-
 // Route::post('/signup', 'Api\AuthController@signup');
 
 Route::post('/signup', [AuthController::class, 'signup']);
