@@ -24,7 +24,13 @@ Route::middleware('auth:sanctum')->group(function() {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::apiResource('/users', UserController::class);
+    //Route::apiResource('/users', UserController::class);
+    
+    Route::get('/users', [UserController::class, 'index']);          // Get all users
+    Route::post('/users', [UserController::class, 'store']);         // Create a new user
+    Route::get('/users/{id}', [UserController::class, 'show']);      // Get a specific user
+    Route::put('/users/{id}', [UserController::class, 'update']);    // Update a specific user
+    Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete a specific user
 });
 
 // Route::post('/signup', 'Api\AuthController@signup');
