@@ -17,23 +17,27 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $searchString = $request->query('search');
+        $search = $request->query('search');
 
-        $users = User::where(function($query) use ($searchString) {
-                $query->where('id', 'like', "%{$searchString}%")
-                    ->orWhere('name', 'like', "%{$searchString}%")
-                    ->orWhere('email', 'like', "%{$searchString}%");
-            })
-            ->orderBy("id","desc")
-            ->paginate(10);
+        $users = User::select(['id', 'name', 'email', 'created_at']) // Fetch only needed columns
+        ->when(!empty($search), function ($query) use ($search) {  // Ensure search is not null
+            return $query->where('id', intval($search))
+                            ->orWhere('name', 'LIKE', "%{$search}%")
+                            ->orWhere('email', 'LIKE', "%{$search}%");
+        })
+        ->orderBy("id","desc")
+        ->paginate(10); // Use pagination to avoid loading too many users at once
 
-//        return UserResource::collection(
-//            User::query()->orderBy('id', 'desc')->paginate(10)
-//        );
+        // $users = User::where(function($query) use ($searchString) {
+        //         $query->where('id', 'like', "%{$searchString}%")
+        //             ->orWhere('name', 'like', "%{$searchString}%")
+        //             ->orWhere('email', 'like', "%{$searchString}%");
+        //     })
+        //     ->orderBy("id","desc")
+        //     ->paginate(10);
+        //return response()->json($users);
 
-        //print_r(UserResource::collection($users));exit;
-
-        return response()->json($users);
+        return UserResource::collection($users);
     }
 
     /**
