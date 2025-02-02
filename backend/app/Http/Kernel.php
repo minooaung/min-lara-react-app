@@ -41,7 +41,10 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
+            // Disable it if we are using Laravel as a pure API backend with a frontend like React, Vue, or Angular
+            // (or) authenticating users via token-based authentication (e.g., Laravel Sanctum, JWT, or Passport).
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
