@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../axios-client";
 import { Link } from "react-router-dom";
-import { useStateContext } from "../contexts/ContextProvider";
+
+// import { useStateContext } from "../contexts/ContextProvider";
+
+import { useDispatch } from "react-redux";
+import { notiActions } from "../store/notification";
 
 import { debounce } from "lodash"; // Run > npm install lodash
 
@@ -9,7 +13,10 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const { setNotification } = useStateContext();
+  // Via Context API
+  // const { setNotification } = useStateContext();
+
+  const dispatch = useDispatch();
 
   //-----------------
   const [paginationLinks, setPaginationLinks] = useState([]);
@@ -71,16 +78,24 @@ export default function Users() {
     }
 
     axiosClient.delete(`/users/${u.id}`).then(() => {
-      setNotification("User was successfully deleted");
+      // Via Context API
+      // setNotification("User was successfully deleted");
+
+      dispatch(notiActions.settingNotiMessage("User was successfully deleted"));
+
+      setTimeout(() => {
+        dispatch(notiActions.settingNotiMessage(null));
+      }, 3000);
 
       fetchUsers(1);
     });
   };
 
-  // Wrap search query update in debounce
+  // Wrapping search query update in debounce
+  // For search filter of Users Register
   const handleSearchChange = debounce((value) => {
     setSearchQuery(value);
-  }, 1000); // Delay API call by 1000ms
+  }, 1100); // Delay API call by 1000ms
 
   return (
     <div>

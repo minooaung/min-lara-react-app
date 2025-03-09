@@ -1,30 +1,38 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-    baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`
-})
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
+});
 
 axiosClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('ACCESS_TOKEN')
-    config.headers.Authorization = `Bearer ${token}`
-    return config;
-})
+  const token = localStorage.getItem("ACCESS_TOKEN");
 
-axiosClient.interceptors.response.use((response) => {
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  config.headers["Content-Type"] = "application/json";
+
+  return config;
+});
+
+axiosClient.interceptors.response.use(
+  (response) => {
     return response;
-}, (error) => {
+  },
+  (error) => {
     try {
-        const {response} = error;
+      const { response } = error;
 
-        if (response.status === 401) {
-            localStorage.removeItem('ACCESS_TOKEN');
-        }
-    } catch(e) {
-        console.error(e);
+      if (response.status === 401) {
+        localStorage.removeItem("ACCESS_TOKEN");
+        //window.location.href = "/login"; // Redirect to login
+      }
+    } catch (e) {
+      console.error(e);
     }
 
-    
     throw error;
-})
+  }
+);
 
 export default axiosClient;

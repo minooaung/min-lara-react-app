@@ -1,71 +1,85 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import axiosClient from "../axios-client";
-import { useStateContext } from "../contexts/ContextProvider";
+
+// import { useStateContext } from "../contexts/ContextProvider";
+
+import { useSelector, useDispatch } from "react-redux";
+import { authActions } from "../store/auth";
 
 export default function Signup() {
-    const nameRef = useRef();
-    const emailRef = useRef();
-    const passwordRef = useRef();
-    const passwordConfirmationRef = useRef();
+  const nameRef = useRef();
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const passwordConfirmationRef = useRef();
 
-    const [errors, setErrors] = useState(null)
+  const [errors, setErrors] = useState(null);
 
-    const {setUser, setToken} = useStateContext()
+  // Via Context API
+  //   const { setUser, setToken } = useStateContext();
 
-    const onSubmit  = (ev) => {
-        ev.preventDefault()
+  const dispatch = useDispatch();
 
-        const payload = {
-            name: nameRef.current.value,
-            email: emailRef.current.value,
-            password: passwordRef.current.value,
-            password_confirmation: passwordConfirmationRef.current.value
+  const onSubmit = (ev) => {
+    ev.preventDefault();
+
+    const payload = {
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+      password: passwordRef.current.value,
+      password_confirmation: passwordConfirmationRef.current.value,
+    };
+
+    axiosClient
+      .post("/signup", payload)
+      .then(({ data }) => {
+        // Via Context api
+        // setUser(data.user);
+        // setToken(data.token);
+
+        // Try using redux instead of context provider
+        dispatch(authActions.settingUser(data.user));
+        dispatch(authActions.settingToken(data.token));
+      })
+      .catch((err) => {
+        const response = err.response;
+
+        if (response && response.status == 422) {
+          console.log(response.data.errors);
+          setErrors(response.data.errors);
         }
+      });
+  };
 
-        //console.log(payload);
-
-        axiosClient.post('/signup', payload)
-            .then(({data}) => {
-                setUser(data.user)
-                setToken(data.token)
-            })
-            .catch(err => {
-                const response = err.response;
-
-                if (response && response.status == 422) {
-                    console.log(response.data.errors);
-                    setErrors(response.data.errors);
-                }
-            })
-    } 
-
-    return (
-        <div className="login-signup-form animated fadeInDown">
-            <div className="form">                
-                <form onSubmit={onSubmit}>
-                    <h1 className="title">
-                        Sign up for free
-                    </h1>
-                    {errors && <div className="alert">
-                        {Object.keys(errors).map(key => (
-                            <p key={key}>{errors[key][0]}</p>
-                        ))}
-                    </div>
-                    }
-
-                    <input ref={nameRef} placeholder="Full Name"/>
-                    <input ref={emailRef} type="email" placeholder="Email Address"/>
-                    <input ref={passwordRef} type="password" placeholder="Password"/>
-                    <input ref={passwordConfirmationRef} type="password" placeholder="Password Confirmation"/>
-
-                    <button className="btn btn-block">Sign Up</button>
-
-                    <p className="message">
-                        Already Registered? <Link to="/login">Sign In</Link>
-                    </p>
-                </form>
+  return (
+    <div className="login-signup-form animated fadeInDown">
+      <div className="form">
+        <form onSubmit={onSubmit}>
+          <h1 className="title">Sign up for free</h1>
+          {errors && (
+            <div className="alert">
+              {Object.keys(errors).map((key) => (
+                <p key={key}>{errors[key][0]}</p>
+              ))}
             </div>
-        </div>
-    )
+          )}
+
+          <input ref={nameRef} placeholder="Full Name" />
+          <input ref={emailRef} type="email" placeholder="Email Address" />
+          <input ref={passwordRef} type="password" placeholder="Password" />
+          <input
+            ref={passwordConfirmationRef}
+            type="password"
+            placeholder="Password Confirmation"
+          />
+
+          <button className="btn btn-block">Sign Up</button>
+
+          <p className="message">
+            Already Registered? <Link to="/login">Sign In</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
 }
