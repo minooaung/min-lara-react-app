@@ -9,6 +9,7 @@ use App\Models\User;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {  
@@ -35,6 +36,12 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
+        Log::info('Incoming Headers:', $request->headers->all());
+        Log::info('Incoming Cookies:', $request->cookies->all());
+
+        // Log::info('CSRF Token:', ['token' => $request->header('X-XSRF-TOKEN')]);
+        // Log::info('CSRF Cookie:', ['cookie' => $request->cookie('XSRF-TOKEN')]);
+
         $credentials = $request->validated();
 
         if (!Auth::attempt($credentials)) {

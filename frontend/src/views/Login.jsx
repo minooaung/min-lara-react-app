@@ -30,6 +30,13 @@ export default function Login() {
     setErrors(null);
 
     axiosClient
+      .get("http://localhost:8000/sanctum/csrf-cookie", {
+        withCredentials: true,
+      })
+      .then(() => console.log("CSRF Cookie Set!"))
+      .catch((err) => console.error("CSRF Error:", err));
+
+    axiosClient
       .post("/login", payload)
       .then(({ data }) => {
         // Via Context API

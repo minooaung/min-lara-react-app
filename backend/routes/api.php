@@ -38,8 +38,8 @@ Route::middleware('auth:sanctum')->group(function() {
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Route::get('/login', function () {
-//     return response()->json(['error' => 'Unauthorized'], 401);
-// })->name('login');
+Route::get('/sanctum/csrf-cookie', function (Request $request) {
+    return response()->json(['message' => 'CSRF cookie set']);
+});
 
 

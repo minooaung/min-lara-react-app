@@ -45,6 +45,7 @@ class Kernel extends HttpKernel
             // (or) authenticating users via token-based authentication (e.g., Laravel Sanctum, JWT, or Passport).
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, // ✅ Required for API-only apps
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
