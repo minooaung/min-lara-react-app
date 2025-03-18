@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../axios-client";
 
 // import { useStateContext } from "../contexts/ContextProvider";
@@ -18,6 +18,8 @@ export default function Login() {
 
   const dispatch = useDispatch();
 
+  const navigate = useNavigate(); // ✅ Create navigate function
+
   const onSubmit = (ev) => {
     ev.preventDefault();
 
@@ -26,39 +28,21 @@ export default function Login() {
       password: passwordRef.current.value,
     };
 
-    //console.log(payload);
     setErrors(null);
 
     axiosClient
-      .get("http://localhost:8000/sanctum/csrf-cookie", {
-        withCredentials: true,
+      .get("/sanctum/csrf-cookie") // ✅ Always get CSRF cookie before login
+      .then(() => {
+        return axiosClient.post("/login", payload);
       })
-      .then(() => console.log("CSRF Cookie Set!"))
-      .catch((err) => console.error("CSRF Error:", err));
-
-    axiosClient
-      .post("/login", payload)
       .then(({ data }) => {
-        // Via Context API
-        // setUser(data.user);
-        // setToken(data.token);
-
-        // Try using redux instead of context provider
         dispatch(authActions.settingUser(data.user));
-        dispatch(authActions.settingToken(data.token));
+        navigate("/users");
       })
       .catch((err) => {
-        //debugger;
         const response = err.response;
-
         if (response && response.status == 422) {
-          if (response.data.errors) {
-            setErrors(response.data.errors);
-          } else {
-            setErrors({
-              email: [response.data.message],
-            });
-          }
+          setErrors(response.data.errors || { email: [response.data.message] });
         }
       });
   };

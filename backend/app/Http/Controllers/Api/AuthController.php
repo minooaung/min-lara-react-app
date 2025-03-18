@@ -38,7 +38,6 @@ class AuthController extends Controller
     {
         Log::info('Incoming Headers:', $request->headers->all());
         Log::info('Incoming Cookies:', $request->cookies->all());
-
         // Log::info('CSRF Token:', ['token' => $request->header('X-XSRF-TOKEN')]);
         // Log::info('CSRF Cookie:', ['cookie' => $request->cookie('XSRF-TOKEN')]);
 
@@ -52,18 +51,37 @@ class AuthController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
-        $token = $user->createToken('main')->plainTextToken;
+        Log::info('User Logged In:', ['user' => $user]);
 
-        return response(compact('user', 'token'));
+        // No longer using this token
+        // $token = $user->createToken('main')->plainTextToken;
+        // return response(compact('user', 'token'));
+
+        // Check if response includes the cookie
+        $response = response()->json(['user' => $user]);
+        Log::info('Response Headers:', $response->headers->all());
+
+        return $response;
     }
 
     public function logout(Request $request)
     {
         /** @var User $user */
-        $user = $request->user();
+        // $user = $request->user();
+        // $user->currentAccessToken()->delete();
+        // return response('', 204);
 
-        $user->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
 
-        return response('', 204);
+        // Invalidate session and regenerate CSRF token
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Clear authentication cookies
+        return response()->json(['message' => 'Logged out'])->withCookie(
+            cookie()->forget('XSRF-TOKEN')
+        )->withCookie(
+            cookie()->forget('laravel_session')
+        );
     }
 }

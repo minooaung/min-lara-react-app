@@ -31,9 +31,11 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 120),
+    //'lifetime' => env('SESSION_LIFETIME', 120), // Session expires after 120 minutes
+    'lifetime' => env('SESSION_LIFETIME', 10),
 
-    'expire_on_close' => false,
+    //'expire_on_close' => false,    
+    'expire_on_close' => true, // This forces the session to expire after SESSION_LIFETIME minutes of inactivity.
 
     /*
     |--------------------------------------------------------------------------
