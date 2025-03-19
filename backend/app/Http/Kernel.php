@@ -31,12 +31,12 @@ class Kernel extends HttpKernel
      * @var array<string, array<int, class-string|string>>
      */
     protected $middlewareGroups = [
-        'web' => [
+        'web' => [            
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\VerifyCsrfToken::class, // *** Ensure this is included for X-CSRF-TOKEN
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
@@ -45,9 +45,11 @@ class Kernel extends HttpKernel
             // (or) authenticating users via token-based authentication (e.g., Laravel Sanctum, JWT, or Passport).
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, // ✅ Required for API-only apps
+            \Illuminate\Session\Middleware\StartSession::class, // *** Ensure this is included. Add this to set last_activity from login() and checking from InactiveSessionLogout           
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, // *** Ensure this is included. Required for API with X-CSRF-TOKEN
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\InactiveSessionLogout::class, // *** Ensure this is included
         ],
     ];
 

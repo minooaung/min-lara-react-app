@@ -31,8 +31,7 @@ return [
     |
     */
 
-    //'lifetime' => env('SESSION_LIFETIME', 120), // Session expires after 120 minutes
-    'lifetime' => env('SESSION_LIFETIME', 10),
+    'lifetime' => env('SESSION_LIFETIME', 120),
 
     //'expire_on_close' => false,    
     'expire_on_close' => true, // This forces the session to expire after SESSION_LIFETIME minutes of inactivity.
@@ -115,7 +114,9 @@ return [
     |
     */
 
-    'lottery' => [2, 100],
+    'lottery' => [2, 100], // This works and currently using
+    #'lottery' => [50, 100], // 50% chance of cleaning expired sessions
+    #'lottery' => [100, 100], // Run session cleanup on every request.
 
     /*
     |--------------------------------------------------------------------------

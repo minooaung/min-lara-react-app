@@ -34,17 +34,18 @@ axiosClient.interceptors.response.use(
         // localStorage.removeItem("ACCESS_TOKEN");
 
         // Session expired or user is not authenticated
-        console.log("Session expired. Logging out...");
+        console.log("Session Expired. Logging out...");
 
         // Dispatch Redux logout action
         store.dispatch(authActions.logout());
-        store.dispatch(
-          notiActions.settingNotiMessage(
-            "Session expired. Please log in again."
-          )
-        );
 
-        //window.location.href = "/login"; // Redirect to login
+        // store.dispatch(
+        //   notiActions.settingNotiMessage(
+        //     "Session expired. Please log in again."
+        //   )
+        // );
+
+        window.location.href = "/login"; // Redirect to login
       }
     } catch (e) {
       console.error(e);

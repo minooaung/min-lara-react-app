@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {  
@@ -52,6 +53,10 @@ class AuthController extends Controller
         /** @var User $user */
         $user = Auth::user();
         Log::info('User Logged In:', ['user' => $user]);
+
+        // Store last_activity timestamp on login
+        Session::put('last_activity', now());
+        Log::info( "Initialized last_activity value from Login " . Session::get('last_activity'));
 
         // No longer using this token
         // $token = $user->createToken('main')->plainTextToken;
