@@ -87,6 +87,7 @@ input:focus {
   color: #212121;
   transition: all 0.3s;
   border-radius: 6px;
+  margin-left: 1.5rem;
 }
 .btn-logout:hover {
   background-color: rgba(0, 0, 0, 0.1);
