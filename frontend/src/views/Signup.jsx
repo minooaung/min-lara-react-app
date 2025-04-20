@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../axios-client";
 
 // import { useStateContext } from "../contexts/ContextProvider";
@@ -19,6 +19,7 @@ export default function Signup() {
   //   const { setUser, setToken } = useStateContext();
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const onSubmit = (ev) => {
     ev.preventDefault();
@@ -30,23 +31,37 @@ export default function Signup() {
       password_confirmation: passwordConfirmationRef.current.value,
     };
 
-    axiosClient
-      .post("/signup", payload)
-      .then(({ data }) => {
-        // Via Context api
-        // setUser(data.user);
-        // setToken(data.token);
+    // // Get CSRF cookie before signup
+    // axiosClient.get("/sanctum/csrf-cookie").then(() => {
+    //   axiosClient
+    //     .post("/signup", payload)
+    //     .then(({ data }) => {
+    //       dispatch(authActions.settingUser(data.user));
+    //       navigate("/users");
+    //       // Optional: Redirect to authenticated route
+    //       //window.location.href = "/dashboard"; // or use navigate()
+    //     })
+    //     .catch((err) => {
+    //       const response = err.response;
+    //       if (response && response.status === 422) {
+    //         setErrors(response.data.errors);
+    //       }
+    //     });
+    // });
 
-        // Try using redux instead of context provider
+    axiosClient
+      .get("/sanctum/csrf-cookie") // ✅ Always get CSRF cookie before Signup
+      .then(() => {
+        return axiosClient.post("/signup", payload);
+      })
+      .then(({ data }) => {
         dispatch(authActions.settingUser(data.user));
-        dispatch(authActions.settingToken(data.token));
+        navigate("/users");
       })
       .catch((err) => {
         const response = err.response;
-
         if (response && response.status == 422) {
-          console.log(response.data.errors);
-          setErrors(response.data.errors);
+          setErrors(response.data.errors || { email: [response.data.message] });
         }
       });
   };
