@@ -25,14 +25,13 @@ class AuthController extends Controller
             'password' => bcrypt($data['password']) 
         ]);
 
-        $token = $user->createToken('main')->plainTextToken;
+        Auth::login($user);
 
-        // return response([
-        //     'user' => $user, 
-        //     'token' => $token
-        // ]);
+        // $response = response()->json(['user' => $user]);
+        // Log::info('Response Headers:', $response->headers->all());
+        // return $response;
 
-        return response(compact('user', 'token'));
+        return response(['user' => $user]);
     }
 
     public function login(LoginRequest $request)
