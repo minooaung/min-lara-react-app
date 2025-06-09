@@ -47,6 +47,43 @@ export default function Login() {
       });
   };
 
+  // let csrfInitialized = false;
+
+  // const onSubmit = (ev) => {
+  //   ev.preventDefault();
+
+  //   const payload = {
+  //     email: emailRef.current.value,
+  //     password: passwordRef.current.value,
+  //   };
+
+  //   setErrors(null);
+
+  //   const login = () => {
+  //     return axiosClient.post("/login", payload);
+  //   };
+
+  //   const initCSRFIfNeeded = () => {
+  //     if (csrfInitialized) return Promise.resolve();
+  //     return axiosClient.get("/sanctum/csrf-cookie").then(() => {
+  //       csrfInitialized = true;
+  //     });
+  //   };
+
+  //   initCSRFIfNeeded()
+  //     .then(() => login())
+  //     .then(({ data }) => {
+  //       dispatch(authActions.settingUser(data.user));
+  //       navigate("/users");
+  //     })
+  //     .catch((err) => {
+  //       const response = err.response;
+  //       if (response && response.status == 422) {
+  //         setErrors(response.data.errors || { email: [response.data.message] });
+  //       }
+  //     });
+  // };
+
   return (
     <div className="login-signup-form animated fadeInDown">
       <div className="form">

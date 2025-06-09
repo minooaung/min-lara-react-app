@@ -9,14 +9,20 @@ const axiosClient = axios.create({
   withCredentials: true, // Send cookies automatically
 });
 
-axiosClient.interceptors.request.use((config) => {
-  // Not using token as automatically sending cookies
-  // const token = localStorage.getItem("ACCESS_TOKEN");
-  // if (token) {
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
+// Helper to read cookies from document.cookie
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : null;
+}
 
+axiosClient.interceptors.request.use((config) => {
   config.headers["Content-Type"] = "application/json";
+
+  // ✅ Attach CSRF token from cookie (for Sanctum)
+  const xsrfToken = getCookie("XSRF-TOKEN");
+  if (xsrfToken) {
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+  }
 
   return config;
 });
@@ -30,9 +36,6 @@ axiosClient.interceptors.response.use(
       const { response } = error;
 
       if (response.status === 401) {
-        // Not using token as automatically sending cookies
-        // localStorage.removeItem("ACCESS_TOKEN");
-
         // Session expired or user is not authenticated
         console.log("Session Expired. Logging out...");
 

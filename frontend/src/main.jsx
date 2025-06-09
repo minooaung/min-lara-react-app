@@ -6,6 +6,7 @@ import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import router from "./router.jsx";
 
+// Instead of ContextProvider, I am using Redux for global state management
 // import { ContextProvider } from "./contexts/ContextProvider.jsx";
 
 import { Provider } from "react-redux";
