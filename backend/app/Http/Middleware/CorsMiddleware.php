@@ -1,4 +1,5 @@
 <?php
+// Remove this as using Laravel's built-in CORS middleware (config/cors.php)
 
 // namespace App\Http\Middleware;
 
