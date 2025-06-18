@@ -31,24 +31,31 @@ export default function UserForm() {
     password_confirmation: "",
   });
 
-  if (id) {
-    useEffect(() => {
-      setLoading(true);
-      axiosClient
-        .get(`/users/${id}`)
-        .then(({ data }) => {
-          setLoading(false);
-          //debugger;
-          setUser(data);
-        })
-        .catch(() => {
-          setLoading(false);
-        });
-    }, []);
-  }
+  useEffect(() => {
+    if (!id) return; // Prevent effect from running if `id` is falsy
+
+    setErrors(null); // Reset errors before fetching new user data
+
+    const fetchUser = async () => {
+      setLoading(true); // Start loading
+
+      try {
+        const { data } = await axiosClient.get(`/users/${id}`);
+        setUser(data);
+      } catch (err) {
+        setErrors(handleApiError(err));
+      } finally {
+        setLoading(false); // Ensure loading stops in all cases
+      }
+    };
+
+    fetchUser();
+  }, [id]); // Include `id` as dependency to avoid unnecessary re-runs
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
+
+    setErrors(null); // Reset errors before new request
 
     try {
       let response;

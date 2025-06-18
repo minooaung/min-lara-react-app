@@ -19,12 +19,17 @@ class AuthController extends Controller
     public function signup(SignupRequest $request)
     {
         $data = $request->validated();
+
+        // Force new users to always be EMPLOYEE
+        $data['role'] = 'EMPLOYEE';
+
         /** @var \App\Models\User $user */
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             //'password' => bcrypt($data['password']) 
             'password' => Hash::make($data['password']),
+            'role' => $data['role'], // Ensures EMPLOYEE role is enforced
         ]);
 
         Auth::login($user);
@@ -32,8 +37,8 @@ class AuthController extends Controller
         // $response = response()->json(['user' => $user]);
         // Log::info('Response Headers:', $response->headers->all());
         // return $response;
-
-        return response(['user' => $user]);
+        
+        return response()->json(['user' => $user]);
     }
 
     public function login(LoginRequest $request)

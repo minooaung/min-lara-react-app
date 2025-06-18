@@ -9,6 +9,16 @@ const axiosClient = axios.create({
   withCredentials: true, // Send cookies automatically
 });
 
+// Fetch CSRF cookie when app starts
+const initializeCsrfToken = async () => {
+  try {
+    await axiosClient.get("/sanctum/csrf-cookie");
+    console.log("CSRF cookie set.");
+  } catch (error) {
+    console.error("Failed to retrieve CSRF token:", error);
+  }
+};
+
 // Helper to read cookies from document.cookie
 function getCookie(name) {
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
@@ -35,36 +45,20 @@ axiosClient.interceptors.response.use(
     try {
       const { response } = error;
 
-      // if (response.status === 401) {
-      //   // Session expired or user is not authenticated
-      //   console.log("Session Expired. Logging out...");
-
-      //   // Dispatch Redux logout action
-      //   store.dispatch(authActions.logout());
-
-      //   // store.dispatch(
-      //   //   notiActions.settingNotiMessage(
-      //   //     "Session expired. Please log in again."
-      //   //   )
-      //   // );
-
-      //   window.location.href = "/login"; // Redirect to login
-      // }
-
       if (response?.status === 401) {
         console.log("Authentication failed:", response.data.error);
 
-        // ✅ Prevent logout & redirection on failed login attempt
+        // Prevent logout & redirection on failed login attempt
         if (window.location.pathname === "/login") {
           return Promise.reject(error); // Just show the error, don't log out
         }
 
-        // ✅ Logout only if session has expired (user is already logged in)
+        // Logout only if session has expired (user is already logged in)
         store.dispatch(authActions.logout());
         window.location.href = "/login"; // Redirect only if session expired
       }
 
-      return Promise.reject(error); // ✅ Ensure error is passed to .catch()
+      return Promise.reject(error); // Ensure error is passed to .catch()
     } catch (e) {
       console.error(e);
     }
@@ -72,5 +66,8 @@ axiosClient.interceptors.response.use(
     throw error;
   }
 );
+
+// Call CSRF initialization when app starts
+initializeCsrfToken();
 
 export default axiosClient;

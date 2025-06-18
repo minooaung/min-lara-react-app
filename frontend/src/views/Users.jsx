@@ -81,6 +81,8 @@ export default function Users() {
       return;
     }
 
+    setErrors(null); // Reset errors before new request
+
     try {
       await axiosClient.delete(`/users/${u.id}`);
 
