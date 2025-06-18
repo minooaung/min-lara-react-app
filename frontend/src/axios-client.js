@@ -35,21 +35,36 @@ axiosClient.interceptors.response.use(
     try {
       const { response } = error;
 
-      if (response.status === 401) {
-        // Session expired or user is not authenticated
-        console.log("Session Expired. Logging out...");
+      // if (response.status === 401) {
+      //   // Session expired or user is not authenticated
+      //   console.log("Session Expired. Logging out...");
 
-        // Dispatch Redux logout action
+      //   // Dispatch Redux logout action
+      //   store.dispatch(authActions.logout());
+
+      //   // store.dispatch(
+      //   //   notiActions.settingNotiMessage(
+      //   //     "Session expired. Please log in again."
+      //   //   )
+      //   // );
+
+      //   window.location.href = "/login"; // Redirect to login
+      // }
+
+      if (response?.status === 401) {
+        console.log("Authentication failed:", response.data.error);
+
+        // ✅ Prevent logout & redirection on failed login attempt
+        if (window.location.pathname === "/login") {
+          return Promise.reject(error); // Just show the error, don't log out
+        }
+
+        // ✅ Logout only if session has expired (user is already logged in)
         store.dispatch(authActions.logout());
-
-        // store.dispatch(
-        //   notiActions.settingNotiMessage(
-        //     "Session expired. Please log in again."
-        //   )
-        // );
-
-        window.location.href = "/login"; // Redirect to login
+        window.location.href = "/login"; // Redirect only if session expired
       }
+
+      return Promise.reject(error); // ✅ Ensure error is passed to .catch()
     } catch (e) {
       console.error(e);
     }

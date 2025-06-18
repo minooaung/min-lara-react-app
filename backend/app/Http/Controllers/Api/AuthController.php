@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\SignupRequest;
 use App\Models\User;
 
+use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,8 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => bcrypt($data['password']) 
+            //'password' => bcrypt($data['password']) 
+            'password' => Hash::make($data['password']),
         ]);
 
         Auth::login($user);
@@ -38,16 +40,19 @@ class AuthController extends Controller
     {
         Log::info('Incoming Headers:', $request->headers->all());
         Log::info('Incoming Cookies:', $request->cookies->all());
-        // Log::info('CSRF Token:', ['token' => $request->header('X-XSRF-TOKEN')]);
-        // Log::info('CSRF Cookie:', ['cookie' => $request->cookie('XSRF-TOKEN')]);
+        Log::info('CSRF Token:', ['token' => $request->header('X-XSRF-TOKEN')]);
+        Log::info('CSRF Cookie:', ['cookie' => $request->cookie('XSRF-TOKEN')]);
 
-        $credentials = $request->validated();
+        $credentials = [
+            'email' => $request->validated()['email'],
+            'password' => $request->validated()['password'],
+        ];
 
         if (!Auth::attempt($credentials)) {
-            return response([
-                'message' => 'Provided email address or password is incorrect'
-            ], 422);
-        }
+            Log::warning('Failed login attempt:', ['email' => $credentials['email']]);
+
+            abort(401, 'Invalid email or password'); // Let Laravel handle this through Handler.php
+        }        
 
         /** @var User $user */
         $user = Auth::user();
@@ -55,17 +60,14 @@ class AuthController extends Controller
 
         // Store last_activity timestamp on login
         Session::put('last_activity', now());
-        Log::info( "Initialized last_activity value from Login " . Session::get('last_activity'));
-
-        // No longer using this token
-        // $token = $user->createToken('main')->plainTextToken;
-        // return response(compact('user', 'token'));
+        Log::info( "Initialized last_activity value from Login " . Session::get('last_activity'));        
 
         // Check if response includes the cookie
         $response = response()->json(['user' => $user]);
         Log::info('Response Headers:', $response->headers->all());
-
         return $response;
+
+        //return response()->json(['user' => $user]);
     }
 
     public function logout(Request $request)

@@ -30,7 +30,8 @@ body {
   background-color: #f6f6f6;
 }
 
-input {
+input,
+select {
   outline: 0;
   background: #ffffff;
   width: 100%;
@@ -42,7 +43,8 @@ input {
   transition: all 0.3s;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #5b08a7;
 }
 

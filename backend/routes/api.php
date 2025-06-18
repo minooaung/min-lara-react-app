@@ -26,15 +26,21 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //Route::apiResource('/users', UserController::class);
     
+    // Publicly accessible user retrieval routes
     Route::get('/users', [UserController::class, 'index']);          // Get all users
-    Route::post('/users', [UserController::class, 'store']);         // Create a new user
     Route::get('/users/{id}', [UserController::class, 'show']);      // Get a specific user
-    Route::put('/users/{id}', [UserController::class, 'update']);    // Update a specific user
-    Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete a specific user
+
+    Route::middleware('admin')->group(function() {
+        // Admin-only routes
+
+        Route::post('/users', [UserController::class, 'store']);         // Create a new user    
+        Route::put('/users/{id}', [UserController::class, 'update']);    // Update a specific user
+        Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete a specific user
+    });
+    
 });
 
-// Route::post('/signup', 'Api\AuthController@signup');
-
+// Authentication routes
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/login', [AuthController::class, 'login']);
 

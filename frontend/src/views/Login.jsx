@@ -7,6 +7,8 @@ import axiosClient from "../axios-client";
 import { useDispatch } from "react-redux";
 import { authActions } from "../store/auth";
 
+import { handleApiError } from "../utils/apiErrorHandler";
+
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -36,14 +38,19 @@ export default function Login() {
         return axiosClient.post("/login", payload);
       })
       .then(({ data }) => {
+        console.log("Login response data:", data); // Log the response data
+
         dispatch(authActions.settingUser(data.user));
         navigate("/users");
       })
       .catch((err) => {
-        const response = err.response;
-        if (response && response.status == 422) {
-          setErrors(response.data.errors || { email: [response.data.message] });
-        }
+        console.log(err);
+        setErrors(handleApiError(err));
+
+        // const response = err.response;
+        // if (response && response.status == 422) {
+        //   setErrors(response.data.errors || { email: [response.data.message] });
+        // }
       });
   };
 

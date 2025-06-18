@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../axios-client";
+import { handleApiError } from "../utils/apiErrorHandler";
 
 // import { useStateContext } from "../contexts/ContextProvider"
 
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { authActions } from "../store/auth";
 import { notiActions } from "../store/notification";
 
 export default function UserForm() {
@@ -13,9 +15,10 @@ export default function UserForm() {
   const [errors, setErrors] = useState(null);
 
   // Via Context API
-  //   const { setNotification } = useStateContext();
+  // const { setNotification } = useStateContext(); // Not using Context API here, using Redux instead
 
   const dispatch = useDispatch();
+  const reduxUser = useSelector((state) => state.auth.user);
 
   const navigate = useNavigate();
 
@@ -23,6 +26,7 @@ export default function UserForm() {
     id: null,
     name: "",
     email: "",
+    role: "",
     password: "",
     password_confirmation: "",
   });
@@ -43,59 +47,29 @@ export default function UserForm() {
     }, []);
   }
 
-  const onSubmit = (ev) => {
+  const onSubmit = async (ev) => {
     ev.preventDefault();
 
-    if (user.id) {
-      axiosClient
-        .put(`/users/${user.id}`, user)
-        .then(() => {
-          // Via Context API
-          //setNotification('User was successfully updated');
+    try {
+      let response;
+      if (user.id) {
+        response = await axiosClient.put(`/users/${user.id}`, user);
+        dispatch(notiActions.settingNotiMessage("User updated successfully"));
 
-          dispatch(
-            notiActions.settingNotiMessage("User was successfully updated")
-          );
+        // Extract response data and update user in Redux store
+        console.log("Login user from Redux store:", reduxUser);
+        if (reduxUser && reduxUser.id === user.id) {
+          dispatch(authActions.settingUser(response.data));
+        }
+      } else {
+        await axiosClient.post(`/users`, user);
+        dispatch(notiActions.settingNotiMessage("User created successfully"));
+      }
 
-          setTimeout(() => {
-            dispatch(notiActions.settingNotiMessage(null));
-          }, 3000);
-
-          navigate("/users");
-        })
-        .catch((err) => {
-          const response = err.response;
-
-          if (response && response.status == 422) {
-            console.log(response.data.errors);
-            setErrors(response.data.errors);
-          }
-        });
-    } else {
-      axiosClient
-        .post(`/users`, user)
-        .then(() => {
-          // Via Context API
-          //   setNotification("User was successfully created");
-
-          dispatch(
-            notiActions.settingNotiMessage("User was successfully created")
-          );
-
-          setTimeout(() => {
-            dispatch(notiActions.settingNotiMessage(null));
-          }, 3000);
-
-          navigate("/users");
-        })
-        .catch((err) => {
-          const response = err.response;
-
-          if (response && response.status == 422) {
-            console.log(response.data.errors);
-            setErrors(response.data.errors);
-          }
-        });
+      setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
+      navigate("/users");
+    } catch (err) {
+      setErrors(handleApiError(err));
     }
   };
 
@@ -132,6 +106,18 @@ export default function UserForm() {
                 onChange={(ev) => setUser({ ...user, email: ev.target.value })}
                 placeholder="Email"
               />
+              <select
+                name="role"
+                value={user.role}
+                onChange={(ev) => setUser({ ...user, role: ev.target.value })}
+                disabled={!!user.id} // Disable dropdown if updating an existing user
+              >
+                <option value="" disabled>
+                  Select Role
+                </option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="EMPLOYEE">EMPLOYEE</option>
+              </select>
               <input
                 type="password"
                 onChange={(ev) =>

@@ -59,6 +59,11 @@ class User extends Authenticatable
                     ->withPivot(['assigned_by', 'assigned_at'])
                     ->withTimestamps();
     }
+
+    public function organisationUsers()
+    {
+        return $this->hasMany(OrganisationUser::class, 'assigned_by'); // ✅ Define the relationship
+    }
 }
 
 //-------------------------------------------------------

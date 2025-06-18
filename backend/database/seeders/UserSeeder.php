@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Hash;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 
@@ -22,7 +23,8 @@ class UserSeeder extends Seeder
         }        
 
         \Log::info('Seeding with admin password: ' . $plainAdminPassword);
-        $hashedAdminPassword = bcrypt($plainAdminPassword);
+        //$hashedAdminPassword = bcrypt($plainAdminPassword);
+        $hashedAdminPassword = Hash::make($plainAdminPassword);
 
         // Custom Create 3 admin users
         for ($i = 1; $i <= 3; $i++) {
@@ -35,7 +37,8 @@ class UserSeeder extends Seeder
         }
         
         \Log::info('Seeding with employee password: ' . $plainEmployeePassword);
-        $hashedEmployeePassword = bcrypt($plainEmployeePassword);
+        //$hashedEmployeePassword = bcrypt($plainEmployeePassword);
+        $hashedEmployeePassword = Hash::make($plainEmployeePassword);
 
         // Custom Create 50 employee users
         for ($i = 1; $i <= 50; $i++) {

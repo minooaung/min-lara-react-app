@@ -9,6 +9,8 @@ import { notiActions } from "../store/notification";
 
 import { debounce } from "lodash"; // Run > npm install lodash
 
+import { handleApiError } from "../utils/apiErrorHandler";
+
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,8 @@ export default function Users() {
   const [fromUser, setFromUser] = useState(0); // Starting user number on the current page
   const [toUser, setToUser] = useState(0); // Ending user number on the current page
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [errors, setErrors] = useState(null);
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -72,23 +76,25 @@ export default function Users() {
   };
   //-----------------
 
-  const onDelete = (u) => {
+  const onDelete = async (u) => {
     if (!window.confirm(`Are you sure you want to delete [${u.name}]?`)) {
       return;
     }
 
-    axiosClient.delete(`/users/${u.id}`).then(() => {
-      // Via Context API
-      // setNotification("User was successfully deleted");
+    try {
+      await axiosClient.delete(`/users/${u.id}`);
 
       dispatch(notiActions.settingNotiMessage("User was successfully deleted"));
+      setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
 
-      setTimeout(() => {
-        dispatch(notiActions.settingNotiMessage(null));
-      }, 3000);
+      fetchUsers(1); // Refresh user list after deletion
+    } catch (err) {
+      console.log(err);
+      setErrors(handleApiError(err));
 
-      fetchUsers(1);
-    });
+      // Auto-clear errors after 3 seconds
+      setTimeout(() => setErrors(null), 3000);
+    }
   };
 
   // Wrapping search query update in debounce
@@ -121,6 +127,14 @@ export default function Users() {
             setCurrentPage(1); // Reset page when user searches
           }}
         />
+
+        {errors && (
+          <div className="alert">
+            {Object.keys(errors).map((key) => (
+              <p key={key}>{errors[key][0]}</p>
+            ))}
+          </div>
+        )}
 
         <table>
           <thead>
