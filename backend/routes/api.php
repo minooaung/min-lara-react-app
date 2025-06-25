@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\OrganisationController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,21 +30,22 @@ Route::middleware('auth:sanctum')->group(function() {
     // Publicly accessible user retrieval routes
     Route::get('/users', [UserController::class, 'index']);          // Get all users
     Route::get('/users/{id}', [UserController::class, 'show']);      // Get a specific user
+    Route::post('/users', [UserController::class, 'store']);         // Create a new user    
+    Route::put('/users/{id}', [UserController::class, 'update']);    // Update a specific user
+    Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete a specific user
 
-    Route::middleware('admin')->group(function() {
-        // Admin-only routes
-
-        Route::post('/users', [UserController::class, 'store']);         // Create a new user    
-        Route::put('/users/{id}', [UserController::class, 'update']);    // Update a specific user
-        Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete a specific user
-    });
-    
+    Route::get('/organisations', [OrganisationController::class, 'index']);          
+    Route::get('/organisations/{id}', [OrganisationController::class, 'show']);
+    Route::post('/organisations', [OrganisationController::class, 'store']);         
+    Route::put('/organisations/{id}', [OrganisationController::class, 'update']);    
+    Route::delete('/organisations/{id}', [OrganisationController::class, 'destroy']);
 });
 
 // Authentication routes
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// CSRF protection route for Sanctum
 Route::get('/sanctum/csrf-cookie', function (Request $request) {
     return response()->json(['message' => 'CSRF cookie set']);
 });
