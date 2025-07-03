@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\OrganisationUser;
 
 class Organisation extends Model
 {
@@ -23,8 +24,8 @@ class Organisation extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'organisation_user')
-                    ->using(\App\Models\OrganisationUser::class)
-                    ->withPivot(['assigned_by', 'assigned_at'])
+                    ->using(OrganisationUser::class)
+                    ->withPivot(['assigned_by'])
                     ->withTimestamps();
     }
 }

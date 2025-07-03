@@ -69,11 +69,13 @@ export default function Organisations() {
     setErrors(null);
 
     try {
-      await axiosClient.delete(`/organisations/${org.id}`);
+      const response = await axiosClient.delete(`/organisations/${org.id}`);
 
-      dispatch(
-        notiActions.settingNotiMessage("Organisation was successfully deleted")
-      );
+      // Extract the backend message, with fallback
+      const message =
+        response.data?.message || "Organisation was deleted successfully";
+
+      dispatch(notiActions.settingNotiMessage(message));
       setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
 
       fetchOrganisations(1);

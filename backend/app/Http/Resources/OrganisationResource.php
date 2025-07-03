@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 class OrganisationResource extends JsonResource
 {
+    public static $wrap = false; // Turn Off wrapping data inside another data Eg. data.data
     /**
      * Transform the resource into an array.
      *
@@ -20,7 +21,8 @@ class OrganisationResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'created_at' => Carbon::parse($this->created_at)->format('d/m/Y')
+            'created_at' => Carbon::parse($this->created_at)->format('d/m/Y'),
+            'users' => UserResource::collection($this->whenLoaded('users')) // Load users relationship if available
         ];
     }
 }

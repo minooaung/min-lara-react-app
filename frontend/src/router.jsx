@@ -9,6 +9,7 @@ import GuestLayout from "./components/GuestLayout";
 import Dashboard from "./views/Dashboard";
 import UserForm from "./views/UserForm";
 import Organisations from "./views/Organisations";
+import OrganisationForm from "./views/OrganisationForm";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,14 @@ const router = createBrowserRouter([
       {
         path: "/organisations",
         element: <Organisations />,
+      },
+      {
+        path: "/organisations/new",
+        element: <OrganisationForm key="orgCreate" />,
+      },
+      {
+        path: "/organisations/:id",
+        element: <OrganisationForm key="orgUpdate" />,
       },
     ],
   },

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Organisation;
+use App\Models\OrganisationUser;
 
 class User extends Authenticatable
 {
@@ -55,8 +56,8 @@ class User extends Authenticatable
     public function organisations()
     {
         return $this->belongsToMany(Organisation::class, 'organisation_user')
-                    ->using(\App\Models\OrganisationUser::class)
-                    ->withPivot(['assigned_by', 'assigned_at'])
+                    ->using(OrganisationUser::class)
+                    ->withPivot(['assigned_by'])
                     ->withTimestamps();
     }
 
