@@ -9,14 +9,30 @@ const axiosClient = axios.create({
   withCredentials: true, // Send cookies automatically
 });
 
-axiosClient.interceptors.request.use((config) => {
-  // Not using token as automatically sending cookies
-  // const token = localStorage.getItem("ACCESS_TOKEN");
-  // if (token) {
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
+// Fetch CSRF cookie when app starts
+const initializeCsrfToken = async () => {
+  try {
+    await axiosClient.get("/sanctum/csrf-cookie");
+    console.log("CSRF cookie set.");
+  } catch (error) {
+    console.error("Failed to retrieve CSRF token:", error);
+  }
+};
 
+// Helper to read cookies from document.cookie
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : null;
+}
+
+axiosClient.interceptors.request.use((config) => {
   config.headers["Content-Type"] = "application/json";
+
+  // ✅ Attach CSRF token from cookie (for Sanctum)
+  const xsrfToken = getCookie("XSRF-TOKEN");
+  if (xsrfToken) {
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+  }
 
   return config;
 });
@@ -29,24 +45,20 @@ axiosClient.interceptors.response.use(
     try {
       const { response } = error;
 
-      if (response.status === 401) {
-        // Not using token as automatically sending cookies
-        // localStorage.removeItem("ACCESS_TOKEN");
+      if (response?.status === 401) {
+        console.log("Authentication failed:", response.data.error);
 
-        // Session expired or user is not authenticated
-        console.log("Session Expired. Logging out...");
+        // Prevent logout & redirection on failed login attempt
+        if (window.location.pathname === "/login") {
+          return Promise.reject(error); // Just show the error, don't log out
+        }
 
-        // Dispatch Redux logout action
+        // Logout only if session has expired (user is already logged in)
         store.dispatch(authActions.logout());
-
-        // store.dispatch(
-        //   notiActions.settingNotiMessage(
-        //     "Session expired. Please log in again."
-        //   )
-        // );
-
-        window.location.href = "/login"; // Redirect to login
+        window.location.href = "/login"; // Redirect only if session expired
       }
+
+      return Promise.reject(error); // Ensure error is passed to .catch()
     } catch (e) {
       console.error(e);
     }
@@ -54,5 +66,8 @@ axiosClient.interceptors.response.use(
     throw error;
   }
 );
+
+// Call CSRF initialization when app starts
+initializeCsrfToken();
 
 export default axiosClient;

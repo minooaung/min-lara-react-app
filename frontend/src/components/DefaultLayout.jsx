@@ -24,32 +24,21 @@ export default function DefaultLayout() {
 
   // Fetch user data only if user is authenticated and reduxUser is not set yet
   useEffect(() => {
-    if (reduxUser === null && isAuthenticated) {
-      // Only make API call if reduxUser is null
-      axiosClient
-        .get("/user")
-        .then(({ data }) => {
-          dispatch(authActions.settingUser(data));
-        })
-        .catch(() => {
-          dispatch(authActions.logout());
-        });
-    }
+    if (!reduxUser && isAuthenticated) {
+      const fetchUser = async () => {
+        try {
+          console.log("Fetching authenticated user data from API");
 
-    // if (!reduxUser && isAuthenticated) {
-    //   axiosClient
-    //     .get("/user")
-    //     .then(({ data }) => {
-    //       dispatch(authActions.settingUser(data));
-    //     })
-    //     .catch(() => {
-    //       dispatch(authActions.logout());
-    //     })
-    //     .finally(() => setLoading(false)); // Stop loading once the request completes
-    // } else {
-    //   setLoading(false); // Stop loading if user is already set
-    // }
-  }, [reduxUser, dispatch]); // Run effect only when reduxUser and dispatch changes
+          const { data } = await axiosClient.get("/user");
+          dispatch(authActions.settingUser(data));
+        } catch (error) {
+          dispatch(authActions.logout());
+        }
+      };
+
+      fetchUser();
+    }
+  }, [reduxUser, dispatch]); // Runs when reduxUser changes
 
   // Periodically refresh session every 10 minutes
   useEffect(() => {
@@ -95,6 +84,7 @@ export default function DefaultLayout() {
       <aside>
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/users">Users</Link>
+        <Link to="/organisations">Organisations</Link>
       </aside>
       <div className="content">
         <header>

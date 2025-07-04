@@ -7,6 +7,8 @@ import axiosClient from "../axios-client";
 import { useDispatch } from "react-redux";
 import { authActions } from "../store/auth";
 
+import { handleApiError } from "../utils/apiErrorHandler";
+
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -18,33 +20,33 @@ export default function Login() {
 
   const dispatch = useDispatch();
 
-  const navigate = useNavigate(); // ✅ Create navigate function
+  const navigate = useNavigate(); // Create navigate function
 
-  const onSubmit = (ev) => {
+  const onSubmit = async (ev) => {
     ev.preventDefault();
+
+    setErrors(null); // Reset errors before new request
 
     const payload = {
       email: emailRef.current.value,
       password: passwordRef.current.value,
     };
 
-    setErrors(null);
+    try {
+      // Login directly without CSRF fetch (since it's initialized at startup)
+      const { data } = await axiosClient.post("/login", payload);
 
-    axiosClient
-      .get("/sanctum/csrf-cookie") // ✅ Always get CSRF cookie before login
-      .then(() => {
-        return axiosClient.post("/login", payload);
-      })
-      .then(({ data }) => {
-        dispatch(authActions.settingUser(data.user));
-        navigate("/users");
-      })
-      .catch((err) => {
-        const response = err.response;
-        if (response && response.status == 422) {
-          setErrors(response.data.errors || { email: [response.data.message] });
-        }
-      });
+      console.log("Login response data:", data);
+
+      dispatch(authActions.settingUser(data.user));
+      navigate("/users");
+    } catch (err) {
+      console.log("Login Error:", err);
+      setErrors(handleApiError(err));
+
+      // Auto-clear errors after 5 seconds for smooth UX
+      setTimeout(() => setErrors(null), 5000);
+    }
   };
 
   return (

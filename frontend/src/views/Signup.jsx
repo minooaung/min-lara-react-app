@@ -7,6 +7,8 @@ import axiosClient from "../axios-client";
 import { useSelector, useDispatch } from "react-redux";
 import { authActions } from "../store/auth";
 
+import { handleApiError } from "../utils/apiErrorHandler";
+
 export default function Signup() {
   const nameRef = useRef();
   const emailRef = useRef();
@@ -21,8 +23,10 @@ export default function Signup() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const onSubmit = (ev) => {
+  const onSubmit = async (ev) => {
     ev.preventDefault();
+
+    setErrors(null); // Reset errors before new request
 
     const payload = {
       name: nameRef.current.value,
@@ -31,39 +35,15 @@ export default function Signup() {
       password_confirmation: passwordConfirmationRef.current.value,
     };
 
-    // // Get CSRF cookie before signup
-    // axiosClient.get("/sanctum/csrf-cookie").then(() => {
-    //   axiosClient
-    //     .post("/signup", payload)
-    //     .then(({ data }) => {
-    //       dispatch(authActions.settingUser(data.user));
-    //       navigate("/users");
-    //       // Optional: Redirect to authenticated route
-    //       //window.location.href = "/dashboard"; // or use navigate()
-    //     })
-    //     .catch((err) => {
-    //       const response = err.response;
-    //       if (response && response.status === 422) {
-    //         setErrors(response.data.errors);
-    //       }
-    //     });
-    // });
-
-    axiosClient
-      .get("/sanctum/csrf-cookie") // ✅ Always get CSRF cookie before Signup
-      .then(() => {
-        return axiosClient.post("/signup", payload);
-      })
-      .then(({ data }) => {
-        dispatch(authActions.settingUser(data.user));
-        navigate("/users");
-      })
-      .catch((err) => {
-        const response = err.response;
-        if (response && response.status == 422) {
-          setErrors(response.data.errors || { email: [response.data.message] });
-        }
-      });
+    try {
+      const { data } = await axiosClient.post("/signup", payload);
+      dispatch(authActions.settingUser(data.user));
+      navigate("/users");
+    } catch (err) {
+      console.log("Signup Error:", err);
+      setErrors(handleApiError(err));
+      setTimeout(() => setErrors(null), 5000);
+    }
   };
 
   return (
