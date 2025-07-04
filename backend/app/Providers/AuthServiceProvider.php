@@ -4,8 +4,12 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+
 use App\Models\User;
 use App\Policies\UserPolicy;
+
+use App\Models\Organisation;
+use App\Policies\OrganisationPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         User::class => UserPolicy::class,
+        Organisation::class => OrganisationPolicy::class,
     ];
 
     /**
@@ -26,8 +31,17 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         // Explicitly define authorization rules via Gate (Optional but Recommended)
-        Gate::define('create-user', [UserPolicy::class, 'create']);
-        Gate::define('update-user', [UserPolicy::class, 'update']);
-        Gate::define('delete-user', [UserPolicy::class, 'delete']);
+        // Gate::define('create-user', [UserPolicy::class, 'create']);
+        // Gate::define('update-user', [UserPolicy::class, 'update']);
+        // Gate::define('delete-user', [UserPolicy::class, 'delete']);
+
+        // Can optionally define Organisation gates here if needed
+        // Gate::define('create-organisation', [OrganisationPolicy::class, 'create']);
+        // Gate::define('update-organisation', [OrganisationPolicy::class, 'update']);
+        // Gate::define('delete-organisation', [OrganisationPolicy::class, 'delete']);
+
+        // Note:
+        // Don’t need to define gates for Organisation if I am using authorize() or can() methods directly in controllers. 
+        // But here included if we decide to hook them into components like Blade directives or non-resource-based checks.
     }
 }

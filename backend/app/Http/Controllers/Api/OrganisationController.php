@@ -41,6 +41,7 @@ class OrganisationController extends Controller
     {
         //$organisation = Organisation::findOrFail($id); // Ensures Laravel handles the 404 exception automatically
         $organisation = Organisation::with('users')->findOrFail($id); // Load users relationship
+
         return new OrganisationResource($organisation);
     }
 
@@ -49,6 +50,10 @@ class OrganisationController extends Controller
      */
     public function store(StoreOrgRequest $request)
     {
+        $this->authorize('create', Organisation::class); // Ensure the user is authorized to create an organisation
+        
+        // Validate the request data using the StoreOrgRequest
+        // This will automatically handle validation and return a 422 response if validation fails
         $data = $request->validated();
         $organisation = Organisation::create($data);
 
@@ -69,6 +74,9 @@ class OrganisationController extends Controller
     public function update(UpdateOrgRequest $request, int $id)
     {
         $organisation = Organisation::findOrFail($id);
+
+        $this->authorize('update', $organisation); // Ensure the user is authorized to update the organisation
+
         $data = $request->validated();
         $organisation->update($data);
 
@@ -103,7 +111,11 @@ class OrganisationController extends Controller
     public function destroy(string $id)
     {
         DB::transaction(function () use ($id) {
+            // Retrieve the organisation or throw a 404 if not found
             $organisation = Organisation::findOrFail($id);
+
+            // Check authorization before proceeding with deletion
+            $this->authorize('delete', $organisation); // Ensure the user is authorized to delete the organisation
 
             // Detach or delete pivot records
             $organisation->users()->detach(); // or ->sync([]) if you prefer

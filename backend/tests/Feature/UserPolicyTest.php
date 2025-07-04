@@ -23,8 +23,14 @@ class UserPolicyTest extends TestCase
         parent::setUp();
 
         // Create users for testing
+
+        // Following relies on a custom state method defined in your UserFactory.php
         $this->admin = User::factory()->admin()->create(); // Explicitly set role as ADMIN
-        $this->employee = User::factory()->create(['role' => 'EMPLOYEE']);
+
+        // $this->employee = User::factory()->create(['role' => 'EMPLOYEE']);
+        // (or) following relies on the factory state method employee()
+        $this->employee = User::factory()->employee()->create(); // Explicitly set role as EMPLOYEE
+
         $this->anotherAdmin = User::factory()->admin()->create(); // Another ADMIN user
     }
 

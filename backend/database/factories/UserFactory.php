@@ -27,4 +27,15 @@ class UserFactory extends Factory
             'password' => Hash::make(env('SEED_ADMIN_PASSWORD', 'Platinum@123')), // Matches seeder password handling
         ]);
     }
+
+    /**
+     * Define state for explicitly creating EMPLOYEE users.
+     */
+    public function employee(): static
+    {
+        return $this->state([
+            'role' => 'EMPLOYEE',
+            'password' => Hash::make(env('SEED_EMPLOYEE_PASSWORD', 'Platinum@123')),
+        ]);
+    }
 }
