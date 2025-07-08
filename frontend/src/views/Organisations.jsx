@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import axiosClient from "../axios-client";
 import { Link } from "react-router-dom";
 
-// import { useStateContext } from "../contexts/ContextProvider";
-
 import { useDispatch } from "react-redux";
 import { notiActions } from "../store/notification";
 
@@ -11,61 +9,48 @@ import { debounce } from "lodash"; // Run > npm install lodash
 
 import { handleApiError } from "../utils/apiErrorHandler";
 
-export default function Users() {
-  const [users, setUsers] = useState([]);
+export default function Organisations() {
+  const [organisations, setOrganisations] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Via Context API
-  // const { setNotification } = useStateContext();
 
   const dispatch = useDispatch();
 
   //-----------------
   const [paginationLinks, setPaginationLinks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  //const [lastPage, setLastPage] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0); // State to hold the total number of users
-  const [fromUser, setFromUser] = useState(0); // Starting user number on the current page
-  const [toUser, setToUser] = useState(0); // Ending user number on the current page
+  const [totalOrganisations, setTotalOrganisations] = useState(0);
+  const [fromOrganisation, setFromOrganisation] = useState(0);
+  const [toOrganisation, setToOrganisation] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [errors, setErrors] = useState(null);
 
-  const fetchUsers = async (page = 1) => {
+  const fetchOrganisations = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await axiosClient.get("/users", {
+      const response = await axiosClient.get("/organisations", {
         params: {
           page,
           search: searchQuery,
         },
       });
 
-      setUsers(response.data.data);
-
-      //   setPaginationLinks(response.data.links);
-      //   setCurrentPage(response.data.current_page);
-      ////setLastPage(response.data.last_page);
-      //   setTotalUsers(response.data.total);
-      //   setFromUser(response.data.from);
-      //   setToUser(response.data.to);
-
+      setOrganisations(response.data.data);
       setPaginationLinks(response.data.meta.links);
       setCurrentPage(response.data.meta.current_page);
-      setTotalUsers(response.data.meta.total);
-      setFromUser(response.data.meta.from);
-      setToUser(response.data.meta.to);
+      setTotalOrganisations(response.data.meta.total);
+      setFromOrganisation(response.data.meta.from);
+      setToOrganisation(response.data.meta.to);
 
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching users:", error);
-
+      console.error("Error fetching organisations:", error);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers(currentPage);
+    fetchOrganisations(currentPage);
   }, [currentPage, searchQuery]);
 
   const handlePageChange = (url) => {
@@ -76,34 +61,35 @@ export default function Users() {
   };
   //-----------------
 
-  const onDelete = async (u) => {
-    if (!window.confirm(`Are you sure you want to delete [${u.name}]?`)) {
+  const onDelete = async (org) => {
+    if (!window.confirm(`Are you sure you want to delete [${org.name}]?`)) {
       return;
     }
 
-    setErrors(null); // Reset errors before new request
+    setErrors(null);
 
     try {
-      await axiosClient.delete(`/users/${u.id}`);
+      const response = await axiosClient.delete(`/organisations/${org.id}`);
 
-      dispatch(notiActions.settingNotiMessage("User was successfully deleted"));
+      // Extract the backend message, with fallback
+      const message =
+        response.data?.message || "Organisation was deleted successfully";
+
+      dispatch(notiActions.settingNotiMessage(message));
       setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
 
-      fetchUsers(1); // Refresh user list after deletion
+      fetchOrganisations(1);
     } catch (err) {
       console.log(err);
       setErrors(handleApiError(err));
 
-      // Auto-clear errors after 3 seconds
       setTimeout(() => setErrors(null), 3000);
     }
   };
 
-  // Wrapping search query update in debounce
-  // For search filter of Users Register
   const handleSearchChange = debounce((value) => {
     setSearchQuery(value);
-  }, 1100); // Delay API call by 1000ms
+  }, 1100);
 
   return (
     <div>
@@ -114,8 +100,8 @@ export default function Users() {
           alignItems: "center",
         }}
       >
-        <h1>Users</h1>
-        <Link to="/users/new" className="btn-add">
+        <h1>Organisations</h1>
+        <Link to="/organisations/new" className="btn-add">
           Add new
         </Link>
       </div>
@@ -126,7 +112,7 @@ export default function Users() {
           placeholder="Search"
           onChange={(e) => {
             handleSearchChange(e.target.value);
-            setCurrentPage(1); // Reset page when user searches
+            setCurrentPage(1);
           }}
         />
 
@@ -143,8 +129,6 @@ export default function Users() {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
               <th>Created Date</th>
               <th>Actions</th>
             </tr>
@@ -160,20 +144,18 @@ export default function Users() {
           )}
           {!loading && (
             <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.id}</td>
-                  <td>{u.name}</td>
-                  <td>{u.email}</td>
-                  <td>{u.role}</td>
-                  <td>{u.created_at}</td>
+              {organisations.map((org) => (
+                <tr key={org.id}>
+                  <td>{org.id}</td>
+                  <td>{org.name}</td>
+                  <td>{org.created_at}</td>
                   <td>
-                    <Link className="btn-edit" to={"/users/" + u.id}>
+                    <Link className="btn-edit" to={"/organisations/" + org.id}>
                       Edit
                     </Link>
                     &nbsp;
                     <button
-                      onClick={(ev) => onDelete(u)}
+                      onClick={() => onDelete(org)}
                       className="btn-delete"
                     >
                       Delete
@@ -186,7 +168,8 @@ export default function Users() {
         </table>
         <div className="pagination-container">
           <div>
-            Showing {fromUser} to {toUser} of {totalUsers} users
+            Showing {fromOrganisation} to {toOrganisation} of{" "}
+            {totalOrganisations} organisations
           </div>
           <div className="pagination">
             {(Array.isArray(paginationLinks) ? paginationLinks : []).map(
