@@ -49,7 +49,7 @@ export default function UserForm() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<UserFormData>({
-    id: null,
+    id: id ? Number(id) : null,
     name: "",
     email: "",
     role: "",
@@ -135,8 +135,11 @@ export default function UserForm() {
 
   return (
     <>
-      {user.id && <h1>Edit : {user.name}</h1>}
-      {!user.id && <h1>New User</h1>}
+      {id ? (
+        <h1>Edit{user.name ? `: ${user.name}` : ""}</h1>
+      ) : (
+        <h1>New User</h1>
+      )}
       <div className="card animated fadeInDown">
         {loading && <div className="text-center">Loading...</div>}
 

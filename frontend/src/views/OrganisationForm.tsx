@@ -24,7 +24,7 @@ export default function OrganisationForm() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors | null>(null);
   const [organisation, setOrganisation] = useState<Organisation>({
-    id: null,
+    id: id ? Number(id) : null,
     name: "",
   });
 
@@ -40,7 +40,6 @@ export default function OrganisationForm() {
 
       try {
         const { data } = await axiosClient.get<Organisation>(`/organisations/${id}`);
-        console.log("Fetched Organisation Data:", data);
         setOrganisation(data);
         setSelectedUserIds(data.users?.map(u => u.id) || []);
       } catch (err) {
@@ -89,9 +88,11 @@ export default function OrganisationForm() {
 
   return (
     <>
-      <h1>
-        {organisation.id ? "Edit" : "New Organisation"}
-      </h1>
+      {id ? (
+        <h1>Edit{organisation.name ? `: ${organisation.name}` : ""}</h1>
+      ) : (
+        <h1>New Organisation</h1>
+      )}
       <div className="card animated fadeInDown">
         {loading && <div className="text-center">Loading...</div>}
 
