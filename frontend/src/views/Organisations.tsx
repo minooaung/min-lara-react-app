@@ -1,34 +1,55 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../axios-client";
 import { Link } from "react-router-dom";
-
 import { useDispatch } from "react-redux";
 import { notiActions } from "../store/notification";
+import { debounce } from "lodash";
+import { handleApiError, ValidationErrors } from "../utils/apiErrorHandler";
 
-import { debounce } from "lodash"; // Run > npm install lodash
+interface Organisation {
+  id: number;
+  name: string;
+  created_at: string;
+}
 
-import { handleApiError } from "../utils/apiErrorHandler";
+interface PaginationLink {
+  url: string | null;
+  label: string;
+  active: boolean;
+}
+
+interface OrganisationsResponse {
+  data: Organisation[];
+  meta: {
+    current_page: number;
+    from: number;
+    to: number;
+    total: number;
+    links: PaginationLink[];
+  };
+}
+
+interface DeleteResponse {
+  message?: string;
+}
 
 export default function Organisations() {
-  const [organisations, setOrganisations] = useState([]);
+  const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const dispatch = useDispatch();
-
-  //-----------------
-  const [paginationLinks, setPaginationLinks] = useState([]);
+  const [paginationLinks, setPaginationLinks] = useState<PaginationLink[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOrganisations, setTotalOrganisations] = useState(0);
   const [fromOrganisation, setFromOrganisation] = useState(0);
   const [toOrganisation, setToOrganisation] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [errors, setErrors] = useState<ValidationErrors | null>(null);
 
-  const [errors, setErrors] = useState(null);
+  const dispatch = useDispatch();
 
   const fetchOrganisations = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await axiosClient.get("/organisations", {
+      const response = await axiosClient.get<OrganisationsResponse>("/organisations", {
         params: {
           page,
           search: searchQuery,
@@ -53,15 +74,14 @@ export default function Organisations() {
     fetchOrganisations(currentPage);
   }, [currentPage, searchQuery]);
 
-  const handlePageChange = (url) => {
+  const handlePageChange = (url: string | null) => {
     if (url) {
       const page = new URL(url).searchParams.get("page");
       setCurrentPage(Number(page));
     }
   };
-  //-----------------
 
-  const onDelete = async (org) => {
+  const onDelete = async (org: Organisation) => {
     if (!window.confirm(`Are you sure you want to delete [${org.name}]?`)) {
       return;
     }
@@ -69,11 +89,8 @@ export default function Organisations() {
     setErrors(null);
 
     try {
-      const response = await axiosClient.delete(`/organisations/${org.id}`);
-
-      // Extract the backend message, with fallback
-      const message =
-        response.data?.message || "Organisation was deleted successfully";
+      const response = await axiosClient.delete<DeleteResponse>(`/organisations/${org.id}`);
+      const message = response.data?.message || "Organisation was deleted successfully";
 
       dispatch(notiActions.settingNotiMessage(message));
       setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
@@ -82,12 +99,11 @@ export default function Organisations() {
     } catch (err) {
       console.log(err);
       setErrors(handleApiError(err));
-
       setTimeout(() => setErrors(null), 3000);
     }
   };
 
-  const handleSearchChange = debounce((value) => {
+  const handleSearchChange = debounce((value: string) => {
     setSearchQuery(value);
   }, 1100);
 
@@ -136,7 +152,7 @@ export default function Organisations() {
           {loading && (
             <tbody>
               <tr>
-                <td colSpan="5" className="text-center">
+                <td colSpan={5} className="text-center">
                   Loading...
                 </td>
               </tr>
@@ -192,4 +208,4 @@ export default function Organisations() {
       </div>
     </div>
   );
-}
+} 

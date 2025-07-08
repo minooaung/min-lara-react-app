@@ -1,4 +1,4 @@
-import { Navigate, createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter, RouteObject } from "react-router-dom";
 
 import Login from "./views/Login";
 import Signup from "./views/Signup";
@@ -11,7 +11,7 @@ import UserForm from "./views/UserForm";
 import Organisations from "./views/Organisations";
 import OrganisationForm from "./views/OrganisationForm";
 
-const router = createBrowserRouter([
+const routes: RouteObject[] = [
   {
     path: "/",
     element: <DefaultLayout />,
@@ -68,6 +68,8 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFound />,
   },
-]);
+];
 
-export default router;
+const router = createBrowserRouter(routes);
+
+export default router; 

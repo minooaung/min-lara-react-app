@@ -1,25 +1,53 @@
 import { useEffect, useState } from "react";
 import axiosClient from "../axios-client";
-import { handleApiError } from "../utils/apiErrorHandler";
+import { handleApiError, ValidationErrors } from "../utils/apiErrorHandler";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface PaginationLink {
+  url: string | null;
+  label: string;
+  active: boolean;
+}
+
+interface UsersResponse {
+  data: User[];
+  meta: {
+    current_page: number;
+    from: number;
+    to: number;
+    total: number;
+    links: PaginationLink[];
+  };
+}
+
+interface UsersSelectorTableProps {
+  selectedUserIds: number[];
+  setSelectedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
+}
 
 export default function UsersSelectorTable({
   selectedUserIds,
   setSelectedUserIds,
-}) {
-  const [users, setUsers] = useState([]);
+}: UsersSelectorTableProps) {
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [paginationLinks, setPaginationLinks] = useState([]);
+  const [paginationLinks, setPaginationLinks] = useState<PaginationLink[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0); // State to hold the total number of users
-  const [fromUser, setFromUser] = useState(0); // Starting user number on the current page
-  const [toUser, setToUser] = useState(0); // Ending user number on the current page
-  //const [searchQuery, setSearchQuery] = useState("");
-  const [errors, setErrors] = useState(null);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [fromUser, setFromUser] = useState(0);
+  const [toUser, setToUser] = useState(0);
+  const [errors, setErrors] = useState<ValidationErrors | null>(null);
 
   const fetchUsers = async (page = 1) => {
     setLoading(true);
     try {
-      const response = await axiosClient.get("/users", {
+      const response = await axiosClient.get<UsersResponse>("/users", {
         params: { page, search: "" },
       });
 
@@ -29,8 +57,6 @@ export default function UsersSelectorTable({
       setTotalUsers(response.data.meta.total);
       setFromUser(response.data.meta.from);
       setToUser(response.data.meta.to);
-
-      setLoading(false);
     } catch (err) {
       setErrors(handleApiError(err));
     } finally {
@@ -42,14 +68,14 @@ export default function UsersSelectorTable({
     fetchUsers(currentPage);
   }, [currentPage]);
 
-  const handlePageChange = (url) => {
+  const handlePageChange = (url: string | null) => {
     if (url) {
       const page = new URL(url).searchParams.get("page");
       setCurrentPage(Number(page));
     }
   };
 
-  const toggleUserSelection = (id) => {
+  const toggleUserSelection = (id: number) => {
     setSelectedUserIds((prevIds) =>
       prevIds.includes(id)
         ? prevIds.filter((uid) => uid !== id)
@@ -61,15 +87,6 @@ export default function UsersSelectorTable({
     <div>
       <h3>Assign Users</h3>
       <div className="card animated fadeInDown">
-        {/* <input
-        type="text"
-        placeholder="Search Users"
-        onChange={(e) => {
-          //setSearchQuery(e.target.value);
-          setCurrentPage(1);
-        }}
-      /> */}
-
         {errors && (
           <div className="alert">
             {Object.keys(errors).map((key) => (
@@ -91,7 +108,7 @@ export default function UsersSelectorTable({
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" className="text-center">
+                <td colSpan={5} className="text-center">
                   Loading...
                 </td>
               </tr>
@@ -122,7 +139,7 @@ export default function UsersSelectorTable({
             {(Array.isArray(paginationLinks) ? paginationLinks : []).map(
               (link, index) => (
                 <button
-                  type="button" // Prevent unintended form submission
+                  type="button"
                   key={index}
                   onClick={() => handlePageChange(link.url)}
                   disabled={!link.url || link.active}
@@ -140,4 +157,4 @@ export default function UsersSelectorTable({
       </div>
     </div>
   );
-}
+} 

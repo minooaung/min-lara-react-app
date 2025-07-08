@@ -1,50 +1,53 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../axios-client";
-
-// import { useStateContext } from "../contexts/ContextProvider";
-
 import { useDispatch } from "react-redux";
 import { authActions } from "../store/auth";
-
 import { handleApiError } from "../utils/apiErrorHandler";
+import { ValidationErrors } from "../utils/apiErrorHandler";
+
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    role?: string;
+    [key: string]: any;
+  };
+}
 
 export default function Login() {
-  const emailRef = useRef();
-  const passwordRef = useRef();
-
-  const [errors, setErrors] = useState(null);
-
-  // Via Context API
-  //const { setUser, setToken } = useStateContext();
-
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const [errors, setErrors] = useState<ValidationErrors | null>(null);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Create navigate function
-
-  const onSubmit = async (ev) => {
+  const onSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
 
-    setErrors(null); // Reset errors before new request
+    if (!emailRef.current || !passwordRef.current) return;
 
-    const payload = {
+    setErrors(null);
+
+    const payload: LoginPayload = {
       email: emailRef.current.value,
       password: passwordRef.current.value,
     };
 
     try {
-      // Login directly without CSRF fetch (since it's initialized at startup)
-      const { data } = await axiosClient.post("/login", payload);
-
+      const { data } = await axiosClient.post<LoginResponse>("/login", payload);
       console.log("Login response data:", data);
-
       dispatch(authActions.settingUser(data.user));
       navigate("/users");
     } catch (err) {
       console.log("Login Error:", err);
       setErrors(handleApiError(err));
-
-      // Auto-clear errors after 5 seconds for smooth UX
       setTimeout(() => setErrors(null), 5000);
     }
   };
@@ -74,4 +77,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
+} 

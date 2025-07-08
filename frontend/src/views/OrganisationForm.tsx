@@ -1,57 +1,65 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../axios-client";
-import { handleApiError } from "../utils/apiErrorHandler";
-
+import { handleApiError, ValidationErrors } from "../utils/apiErrorHandler";
 import { useDispatch } from "react-redux";
 import { notiActions } from "../store/notification";
+import UsersSelectorTable from "./UsersSelectorTable";
 
-import UsersSelectorTable from "./UsersSelectorTable"; // 👈 Import your selector
+interface Organisation {
+  id: number | null;
+  name: string;
+  users?: Array<{ id: number; name: string; }>;
+}
+
+interface OrganisationFormData extends Organisation {
+  user_ids?: number[];
+}
 
 export default function OrganisationForm() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState(null);
-  const [organisation, setOrganisation] = useState({
+  const [errors, setErrors] = useState<ValidationErrors | null>(null);
+  const [organisation, setOrganisation] = useState<Organisation>({
     id: null,
     name: "",
   });
 
-  const [selectedUserIds, setSelectedUserIds] = useState([]); // 👈 Track selection
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
 
   useEffect(() => {
-    if (!id) return; // Prevent effect from running if `id` is falsy
+    if (!id) return;
 
-    setErrors(null); // Reset errors before fetching new user data
+    setErrors(null);
 
     const fetchOrg = async () => {
-      setLoading(true); // Start loading
+      setLoading(true);
 
       try {
-        const { data } = await axiosClient.get(`/organisations/${id}`);
+        const { data } = await axiosClient.get<Organisation>(`/organisations/${id}`);
         console.log("Fetched Organisation Data:", data);
         setOrganisation(data);
-        setSelectedUserIds(data.users?.map((u) => u.id) || []); // 👈 Prefill assigned users
+        setSelectedUserIds(data.users?.map(u => u.id) || []);
       } catch (err) {
         setErrors(handleApiError(err));
       } finally {
-        setLoading(false); // Ensure loading stops in all cases
+        setLoading(false);
       }
     };
 
     fetchOrg();
-  }, [id]); // Include `id` as dependency to avoid unnecessary re-runs
+  }, [id]);
 
-  const onSubmit = async (ev) => {
+  const onSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     setErrors(null);
 
-    const payload = {
+    const payload: OrganisationFormData = {
       ...organisation,
-      user_ids: selectedUserIds, // 👈 Include selected user IDs
+      user_ids: selectedUserIds,
     };
 
     try {
@@ -61,7 +69,7 @@ export default function OrganisationForm() {
           notiActions.settingNotiMessage("Organisation updated successfully")
         );
       } else {
-        await axiosClient.post(`/organisations`, payload);
+        await axiosClient.post("/organisations", payload);
         dispatch(
           notiActions.settingNotiMessage("Organisation created successfully")
         );
@@ -74,13 +82,15 @@ export default function OrganisationForm() {
     }
   };
 
-  const onCancel = () => navigate("/organisations");
+  const onCancel = (ev: React.MouseEvent<HTMLButtonElement>) => {
+    ev.preventDefault();
+    navigate("/organisations");
+  };
 
   return (
     <>
       <h1>
-        {/* {organisation.id ? `Edit : ${organisation.name}` : "New Organisation"} */}
-        {organisation.id ? `Edit` : "New Organisation"}
+        {organisation.id ? "Edit" : "New Organisation"}
       </h1>
       <div className="card animated fadeInDown">
         {loading && <div className="text-center">Loading...</div>}
@@ -98,12 +108,11 @@ export default function OrganisationForm() {
             <h3>Organisation Name</h3>
             <input
               value={organisation.name}
-              onChange={(ev) =>
+              onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
                 setOrganisation({ ...organisation, name: ev.target.value })
               }
               placeholder="Organisation Name"
             />
-            {/* 👇 Embedded user selection table */}
             <UsersSelectorTable
               selectedUserIds={selectedUserIds}
               setSelectedUserIds={setSelectedUserIds}
@@ -117,4 +126,4 @@ export default function OrganisationForm() {
       </div>
     </>
   );
-}
+} 
