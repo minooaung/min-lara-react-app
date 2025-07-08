@@ -6,3 +6,10 @@ Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## 🔐 Security Practices
+
+- Axios scoped to trusted baseURL via environment variables
+- CSRF protection with Laravel Sanctum handshake
+- Cookies auto-managed with `withCredentials`
+- Relative request paths to avoid SSRF risks
