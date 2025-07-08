@@ -77,11 +77,9 @@ export default function OrganisationForm() {
   const onCancel = () => navigate("/organisations");
 
   return (
-    <>
-      <h1>
-        {/* {organisation.id ? `Edit : ${organisation.name}` : "New Organisation"} */}
-        {organisation.id ? `Edit` : "New Organisation"}
-      </h1>
+    <>      
+      {id ? (<h1>Edit{organisation.name ? ` : ${organisation.name}` : ""}</h1>) : (<h1>New Organisation</h1>) }
+      
       <div className="card animated fadeInDown">
         {loading && <div className="text-center">Loading...</div>}
 
@@ -102,6 +100,7 @@ export default function OrganisationForm() {
                 setOrganisation({ ...organisation, name: ev.target.value })
               }
               placeholder="Organisation Name"
+              required={!organisation.id}
             />
             {/* 👇 Embedded user selection table */}
             <UsersSelectorTable

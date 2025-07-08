@@ -86,8 +86,8 @@ export default function UserForm() {
 
   return (
     <>
-      {user.id && <h1>Edit : {user.name}</h1>}
-      {!user.id && <h1>New User</h1>}
+      {id ? (<h1>Edit{user.name ? ` : ${user.name}` : ""}</h1>) : (<h1>New User</h1>)}
+
       <div className="card animated fadeInDown">
         {loading && <div className="text-center">Loading...</div>}
 
@@ -106,12 +106,14 @@ export default function UserForm() {
                 value={user.name}
                 onChange={(ev) => setUser({ ...user, name: ev.target.value })}
                 placeholder="Name"
+                required={!user.id}
               />
               <input
                 type="email"
                 value={user.email}
                 onChange={(ev) => setUser({ ...user, email: ev.target.value })}
                 placeholder="Email"
+                required={!user.id}
               />
               <select
                 name="role"
@@ -130,14 +132,20 @@ export default function UserForm() {
                 onChange={(ev) =>
                   setUser({ ...user, password: ev.target.value })
                 }
-                placeholder="Password"
+                placeholder={user.id ? "Password (optional)" : "Password"}
+                required={!user.id}
               />
               <input
                 type="password"
                 onChange={(ev) =>
                   setUser({ ...user, password_confirmation: ev.target.value })
                 }
-                placeholder="Password Confirmation"
+                placeholder={
+                  user.id
+                    ? "Password Confirmation (optional)"
+                    : "Password Confirmation"
+                }
+                required={!user.id}
               />
               <button className="btn" onClick={onCancel}>
                 Cancel
