@@ -1,58 +1,88 @@
-## Setup the Laravel and React project of Min Oo Aung
+# Min Lara React App
 
-The project has backend and frontend dependencies to start the local development.
-Please follow the steps below.
+A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, and user management capabilities.
 
-1. Install the dependencies for backend
+## 🏗️ Architecture
 
----
+```
+min-lara-react-app/
+├── backend/           # Laravel REST API
+│   └── README.md     # Detailed API documentation
+└── frontend/         # React SPA
+    └── README.md     # Frontend documentation
+```
 
-- Go to backend folder
+## 🚀 Features
+
+- User Authentication (Login/Signup)
+- Organization Management
+- User Management
+- Role-based Access Control (Admin/Employee)
+- Modern React Frontend with Redux
+- RESTful Laravel API Backend
+- MySQL Database
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- PHP >= 8.0
+- Composer
+- Node.js >= 16
+- MySQL/MariaDB
+- Git
+
+## 🏃 Quick Start
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/minooaung/min-lara-react-app.git
+   cd min-lara-react-app
+   ```
+
+2. **Start Backend**
+
+   ```bash
+   cd backend
+   composer install
+   cp .env.example .env
+   php artisan key:generate
+   # Configure your database in .env file
+   php artisan migrate
+   php artisan db:seed
+   php artisan serve
+   ```
+
+   Backend will be available at `http://localhost:8000`
+
+3. **Start Frontend**
+   ```bash
+   cd ../frontend
+   npm install
+   cp .env.example .env
+   # Configure VITE_API_BASE_URL in .env
+   npm run dev
+   ```
+   Frontend will be available at `http://localhost:3000`
+
+## 📚 Documentation
+
+- [Backend API Documentation](backend/README.md)
+- [Frontend Documentation](frontend/README.md)
+
+## 🧪 Running Tests
+
+**Backend Tests**
 
 ```bash
 cd backend
+php artisan test
 ```
 
-- Install dependencies
-
-```bash
-composer install
-```
-
-- Run DB migration
-
-```bash
-php artisan migrate
-```
-
-- Generate Database seeder
-
-```bash
-php artisan db:seed
-```
-
-- Running Backend Server
-
-```bash
-php artisan serve
-```
-
-2. Installing dependencies for frontend
-
-- Go to frontend folder
+**Frontend Tests**
 
 ```bash
 cd frontend
-```
-
-- Install dependencies
-
-```bash
-npm install
-```
-
-- Running Front End
-
-```bash
-npm run dev
+npm run test
 ```
