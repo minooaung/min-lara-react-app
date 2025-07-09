@@ -1,58 +1,72 @@
-## Setup the Laravel and React project of Min Oo Aung
+# Min Lara React App
 
-The project has backend and frontend dependencies to start the local development.
-Please follow the steps below.
+A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, and user management capabilities.
 
-1. Install the dependencies for backend
+## 🏗️ Architecture
 
----
-
-- Go to backend folder
-
-```bash
-cd backend
+```
+min-lara-react-app/
+├── backend/           # Laravel REST API
+│   └── README.md     # Detailed API documentation
+└── frontend/         # React SPA
+    └── README.md     # Frontend documentation
 ```
 
-- Install dependencies
+## 🚀 Features
 
-```bash
-composer install
-```
+- User Authentication (Login/Signup)
+- Organization Management
+- User Management
+- Role-based Access Control (Admin/Employee)
+- Modern React Frontend with Redux
+- RESTful Laravel API Backend
+- MySQL Database
 
-- Run DB migration
+## 📋 Prerequisites
 
-```bash
-php artisan migrate
-```
+Before you begin, ensure you have the following installed:
 
-- Generate Database seeder
+- PHP >= 8.0
+- Composer
+- Node.js >= 16
+- MySQL/MariaDB
+- Git
 
-```bash
-php artisan db:seed
-```
+## 🏃 Quick Start
 
-- Running Backend Server
+1. **Clone the repository**
 
-```bash
-php artisan serve
-```
+   ```bash
+   git clone https://github.com/minooaung/min-lara-react-app.git
+   cd min-lara-react-app
+   ```
 
-2. Installing dependencies for frontend
+2. **Start Backend**
 
-- Go to frontend folder
+   ```bash
+   cd backend
+   composer install
+   cp .env.example .env
+   php artisan key:generate
+   # Configure your database in .env file
+   php artisan migrate
+   php artisan db:seed
+   php artisan serve
+   ```
 
-```bash
-cd frontend
-```
+   Backend will be available at `http://localhost:8000`
 
-- Install dependencies
+3. **Start Frontend**
+   ```bash
+   cd ../frontend
+   npm install
+   cp .env.example .env
+   # Configure VITE_API_BASE_URL in .env
+   npm run dev
+   ```
+   Frontend will be available at `http://localhost:3000`
 
-```bash
-npm install
-```
+## 📚 Documentation
 
-- Running Front End
-
-```bash
-npm run dev
-```
+- [Backend API Documentation](backend/README.md)
+- [Frontend Documentation](frontend/README.md)
