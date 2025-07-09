@@ -70,19 +70,3 @@ Before you begin, ensure you have the following installed:
 
 - [Backend API Documentation](backend/README.md)
 - [Frontend Documentation](frontend/README.md)
-
-## 🧪 Running Tests
-
-**Backend Tests**
-
-```bash
-cd backend
-php artisan test
-```
-
-**Frontend Tests**
-
-```bash
-cd frontend
-npm run test
-```
