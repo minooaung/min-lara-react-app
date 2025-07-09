@@ -2,7 +2,7 @@
 
 A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, and user management capabilities.
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 min-lara-react-app/
@@ -12,7 +12,7 @@ min-lara-react-app/
     └── README.md     # Frontend documentation
 ```
 
-## 🚀 Features
+## Features
 
 - User Authentication (Login/Signup)
 - Organization Management
@@ -22,7 +22,7 @@ min-lara-react-app/
 - RESTful Laravel API Backend
 - MySQL Database
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -32,7 +32,7 @@ Before you begin, ensure you have the following installed:
 - MySQL/MariaDB
 - Git
 
-## 🏃 Quick Start
+## Quick Start
 
 1. **Clone the repository**
 
@@ -66,7 +66,7 @@ Before you begin, ensure you have the following installed:
    ```
    Frontend will be available at `http://localhost:3000`
 
-## 📚 Documentation
+## Documentation
 
 - [Backend API Documentation](backend/README.md)
 - [Frontend Documentation](frontend/README.md)
