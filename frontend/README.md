@@ -63,12 +63,6 @@ src/
 - Relative request paths to avoid SSRF risks
 - Protected routes with authentication
 
-## 🧪 Testing
-
-Run the test suite:
-```bash
-npm run test
-```
 
 ## 📦 Dependencies
 
