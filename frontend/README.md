@@ -2,7 +2,7 @@
 
 The frontend application for the Min Lara React project, built with React and Vite. This modern single-page application (SPA) provides a responsive interface for user and organization management.
 
-## 🚀 Features
+## Features
 
 - Modern React with Hooks
 - Redux for state management
@@ -12,7 +12,7 @@ The frontend application for the Min Lara React project, built with React and Vi
 - User management dashboard
 - Protected routes with authentication
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - React 18+
 - Vite
@@ -20,7 +20,7 @@ The frontend application for the Min Lara React project, built with React and Vi
 - React Router v6
 - Axios for API communication
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -33,19 +33,22 @@ src/
 └── views/             # Page components
 ```
 
-## 🔧 Development Setup
+## Development Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Create `.env` file in the frontend root:
+
    ```env
    VITE_API_BASE_URL=http://localhost:8000
    ```
 
 3. Start development server:
+
    ```bash
    npm run dev
    ```
@@ -55,7 +58,7 @@ src/
    npm run build
    ```
 
-## 🔐 Security Features
+## Security Features
 
 - Axios scoped to trusted baseURL via environment variables
 - CSRF protection with Laravel Sanctum handshake
@@ -63,10 +66,10 @@ src/
 - Relative request paths to avoid SSRF risks
 - Protected routes with authentication
 
-
-## 📦 Dependencies
+## Dependencies
 
 Key dependencies include:
+
 - `react` and `react-dom` - Core React library
 - `@reduxjs/toolkit` - Modern Redux with simplified state management
 - `react-redux` - React bindings for Redux
@@ -74,7 +77,7 @@ Key dependencies include:
 - `axios` - HTTP client
 - `@vitejs/plugin-react` - Vite React plugin
 
-## 🔍 Available Scripts
+## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
