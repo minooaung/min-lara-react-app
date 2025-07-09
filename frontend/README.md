@@ -2,7 +2,7 @@
 
 The frontend application for the Min Lara React project, built with React, TypeScript, and Vite. This modern single-page application (SPA) provides a responsive interface for user and organization management.
 
-## 🚀 Features
+## Features
 
 - Modern React with TypeScript
 - Redux for state management
@@ -13,7 +13,7 @@ The frontend application for the Min Lara React project, built with React, TypeS
 - Protected routes with authentication
 - Type-safe development with TypeScript
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - React 18+
 - TypeScript 5.8+
@@ -23,7 +23,7 @@ The frontend application for the Min Lara React project, built with React, TypeS
 - ESLint with TypeScript support
 - Path aliases with `@/*`
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -36,25 +36,30 @@ src/
 └── views/             # Page components (.tsx)
 ```
 
-## 🔧 Development Setup
+## Development Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Create `.env` file in the frontend root:
+
    ```env
    VITE_API_BASE_URL=http://localhost:8000
    ```
 
 3. Start development server:
+
    ```bash
    npm run dev
    ```
+
    Server will start at `http://localhost:3000`
 
 4. Type checking:
+
    ```bash
    npm run type-check
    ```
@@ -64,7 +69,7 @@ src/
    npm run build
    ```
 
-## 🔐 Security Features
+## Security Features
 
 - Axios scoped to trusted baseURL via environment variables
 - CSRF protection with Laravel Sanctum handshake
@@ -73,9 +78,10 @@ src/
 - Protected routes with authentication guards
 - Type-safe API requests and responses
 
-## 📦 Dependencies
+## Dependencies
 
 Key dependencies include:
+
 - `react` and `react-dom` - Core React library
 - `@reduxjs/toolkit` - Modern Redux with simplified state management
 - `react-redux` - React bindings for Redux
@@ -84,7 +90,7 @@ Key dependencies include:
 - `typescript` - TypeScript language support
 - `@types/*` - TypeScript type definitions
 
-## 🔍 Available Scripts
+## Available Scripts
 
 - `npm run dev` - Start development server (port 3000)
 - `npm run build` - Build for production (includes type checking)
@@ -92,9 +98,10 @@ Key dependencies include:
 - `npm run lint` - Run ESLint with TypeScript support
 - `npm run type-check` - Run TypeScript compiler checks
 
-## 🔧 TypeScript Configuration
+## TypeScript Configuration
 
 Key TypeScript features enabled:
+
 - Strict type checking
 - Path aliases (`@/*` for `src/*`)
 - React JSX support
