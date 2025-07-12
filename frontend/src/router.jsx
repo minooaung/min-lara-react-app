@@ -10,6 +10,7 @@ import Dashboard from "./views/Dashboard";
 import UserForm from "./views/UserForm";
 import Organisations from "./views/Organisations";
 import OrganisationForm from "./views/OrganisationForm";
+import Report from "./views/Report";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: "/organisations/:id",
         element: <OrganisationForm key="orgUpdate" />,
+      },
+      {
+        path: "/report",
+        element: <Report />,
       },
     ],
   },
