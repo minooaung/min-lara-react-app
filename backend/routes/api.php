@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\OrganisationController;
+ use App\Http\Controllers\Api\ReportController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('/organisations', [OrganisationController::class, 'store']);         
     Route::put('/organisations/{id}', [OrganisationController::class, 'update']);    
     Route::delete('/organisations/{id}', [OrganisationController::class, 'destroy']);
+
+    // Report generation routes
+    //Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+    Route::post('/reports/generate', [ReportController::class, 'generate']);
 });
 
 // Authentication routes
@@ -49,5 +54,3 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/sanctum/csrf-cookie', function (Request $request) {
     return response()->json(['message' => 'CSRF cookie set']);
 });
-
-

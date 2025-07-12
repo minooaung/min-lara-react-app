@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\OrganisationUser;
+use App\Traits\HasFormattedTimestamps;
 
 class Organisation extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFormattedTimestamps;
+
+    protected $appends = ['formatted_created_at', 'formatted_updated_at'];
 
     /**
      * Attributes that are mass assignable.
