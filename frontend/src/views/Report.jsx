@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+//import { useSelector } from "react-redux";
 import axiosClient from "../axios-client";
 import { handleApiError } from "../utils/apiErrorHandler";
 
@@ -8,13 +8,17 @@ export default function Report() {
   const [reportType, setReportType] = useState("");
   const [outputFormat, setOutputFormat] = useState("");
   const [htmlPreview, setHtmlPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const reduxUser = useSelector((state) => state.auth.user);
+  // Uncomment if need to access the user from Redux store
+  //const reduxUser = useSelector((state) => state.auth.user);
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
+
     setErrors(null);
     setHtmlPreview(null);
+    setLoading(true);
 
     try {
       const isHtml = outputFormat === "html";
@@ -63,6 +67,8 @@ export default function Report() {
     } catch (err) {
       const friendlyMessage = handleApiError(err);
       setErrors(friendlyMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,7 +115,9 @@ export default function Report() {
             <option value="html">HTML</option>
           </select>
 
-          <button className="btn">Generate Report</button>
+          <button className="btn" disabled={loading}>
+            {loading ? "Generating ........" : "Generate Report"}
+          </button>
         </form>
       </div>
 
