@@ -11,6 +11,7 @@ The frontend application for the Min Lara React project, built with React and Vi
 - Organization management interface
 - User management dashboard
 - Protected routes with authentication
+- Comprehensive reporting system with multiple output formats
 
 ## Tech Stack
 
@@ -32,6 +33,28 @@ src/
 ├── utils/             # Helper functions
 └── views/             # Page components
 ```
+
+## Reports Module
+
+The application includes a powerful reporting system that allows users to generate various types of reports:
+
+### Report Types
+- Users Report - Detailed information about system users
+- Organizations Report - Overview of registered organizations
+
+### Output Formats
+- PDF - For professional document presentation
+- Excel - For data analysis and manipulation
+- CSV - For raw data export
+- JSON - For API integration and data interchange
+- HTML - For web viewing with print capability
+
+### Features
+- Interactive report generation interface
+- Real-time HTML preview
+- Direct file downloads
+- Print functionality for HTML reports
+- Error handling and validation
 
 ## Development Setup
 

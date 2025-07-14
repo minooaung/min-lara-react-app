@@ -29,6 +29,14 @@ A Laravel-based REST API that provides authentication, user management, and orga
 -   Search organizations by ID or name
 -   Pagination support (10 organizations per page)
 
+### Report Generation
+
+-   Generate reports in multiple formats (CSV, Excel, HTML, JSON, PDF)
+-   Customizable field rendering with dedicated renderers
+-   Support for default and specialized field formatting
+-   Extensible architecture for adding new report formats
+-   Field value transformation and formatting
+
 ### Security
 
 -   Role-based access control via policies
@@ -68,6 +76,12 @@ GET    /api/organisations/{id}       - Get specific organization with users
 POST   /api/organisations           - Create organization (admin only)
 PUT    /api/organisations/{id}      - Update organization
 DELETE /api/organisations/{id}      - Delete organization
+```
+
+### Report Generation Endpoints
+
+```
+POST   /api/reports            - Generate report in specified format (CSV/Excel/HTML/JSON/PDF)
 ```
 
 ## Technical Stack
