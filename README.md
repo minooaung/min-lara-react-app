@@ -1,6 +1,6 @@
 # Min Lara React App
 
-A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, and user management capabilities.
+A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, user management capabilities, and a comprehensive reporting system.
 
 ## Architecture
 
@@ -14,6 +14,7 @@ min-lara-react-app/
 
 ## Features
 
+### Core Features
 - User Authentication (Login/Signup)
 - Organization Management
 - User Management
@@ -21,6 +22,18 @@ min-lara-react-app/
 - Modern React Frontend with Redux
 - RESTful Laravel API Backend
 - MySQL Database
+
+### Reporting System
+- Multiple Output Formats:
+  - PDF - For professional document presentation
+  - Excel - For data analysis
+  - CSV - For raw data export
+  - JSON - For data interchange
+  - HTML - For web viewing
+- Customizable Field Rendering
+- Interactive Report Generation Interface
+- Real-time HTML Preview
+- Direct File Downloads
 
 ## Prerequisites
 
@@ -70,3 +83,12 @@ Before you begin, ensure you have the following installed:
 
 - [Backend API Documentation](backend/README.md)
 - [Frontend Documentation](frontend/README.md)
+
+## Security Features
+
+- Role-based Access Control
+- CSRF Protection
+- Secure Session Management
+- Input Validation and Sanitization
+- Protected Routes with Authentication
+- Secure Password Hashing
