@@ -1,32 +1,18 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axiosClient from "../axios-client";
-
-// import { useStateContext } from "../contexts/ContextProvider";
-
-import { useSelector, useDispatch } from "react-redux";
-import { authActions } from "../store/auth";
-
-import { handleApiError } from "../utils/apiErrorHandler";
+import { useSignup } from "../hooks/queries/useAuth";
 
 export default function Signup() {
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
   const passwordConfirmationRef = useRef();
-
-  const [errors, setErrors] = useState(null);
-
-  // Via Context API
-  //   const { setUser, setToken } = useStateContext();
-
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const signupMutation = useSignup();
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
-
-    setErrors(null); // Reset errors before new request
 
     const payload = {
       name: nameRef.current.value,
@@ -36,13 +22,11 @@ export default function Signup() {
     };
 
     try {
-      const { data } = await axiosClient.post("/signup", payload);
-      dispatch(authActions.settingUser(data.user));
+      await signupMutation.mutateAsync(payload);
       navigate("/users");
     } catch (err) {
-      console.log("Signup Error:", err);
-      setErrors(handleApiError(err));
-      setTimeout(() => setErrors(null), 5000);
+      // Error handling is done in the mutation hook
+      console.error("Signup failed:", err);
     }
   };
 
@@ -50,28 +34,35 @@ export default function Signup() {
     <div className="login-signup-form animated fadeInDown">
       <div className="form">
         <form onSubmit={onSubmit}>
-          <h1 className="title">Sign up for free</h1>
-          {errors && (
+          <h1 className="title">Create an account</h1>
+
+          {signupMutation.error && (
             <div className="alert">
-              {Object.keys(errors).map((key) => (
-                <p key={key}>{errors[key][0]}</p>
+              {Object.keys(signupMutation.error).map((key) => (
+                <p key={key}>{signupMutation.error[key][0]}</p>
               ))}
             </div>
           )}
 
-          <input ref={nameRef} placeholder="Full Name" />
-          <input ref={emailRef} type="email" placeholder="Email Address" />
-          <input ref={passwordRef} type="password" placeholder="Password" />
+          <input ref={nameRef} placeholder="Full Name" required />
+          <input ref={emailRef} type="email" placeholder="Email" required />
+          <input ref={passwordRef} type="password" placeholder="Password" required />
           <input
             ref={passwordConfirmationRef}
             type="password"
             placeholder="Password Confirmation"
+            required
           />
-
-          <button className="btn btn-block">Sign Up</button>
-
+          
+          <button 
+            className="btn btn-block"
+            disabled={signupMutation.isPending}
+          >
+            {signupMutation.isPending ? "Creating account..." : "Signup"}
+          </button>
+          
           <p className="message">
-            Already Registered? <Link to="/login">Sign In</Link>
+            Already registered? <Link to="/login">Sign in</Link>
           </p>
         </form>
       </div>

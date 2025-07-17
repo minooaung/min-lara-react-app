@@ -1,76 +1,61 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axiosClient from "../axios-client";
-import { handleApiError } from "../utils/apiErrorHandler";
-
-import { useDispatch } from "react-redux";
-import { notiActions } from "../store/notification";
-
-import UsersSelectorTable from "./UsersSelectorTable"; // 👈 Import your selector
+import UsersSelectorTable from "./UsersSelectorTable";
+import { useOrganisation, useCreateOrganisation, useUpdateOrganisation } from "../hooks/queries/useOrganisations";
 
 export default function OrganisationForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState(null);
+  
+  const [selectedUserIds, setSelectedUserIds] = useState([]); // Track selected users
   const [organisation, setOrganisation] = useState({
     id: null,
     name: "",
   });
 
-  const [selectedUserIds, setSelectedUserIds] = useState([]); // 👈 Track selection
+  // Fetch organization data if editing
+  const { 
+    data: orgData,
+    isLoading: isLoadingOrg,
+    error: orgError,
+    refetch: refetchOrg
+  } = useOrganisation(id);
 
+  // Create and update mutations
+  const createOrganisationMutation = useCreateOrganisation();
+  const updateOrganisationMutation = useUpdateOrganisation();
+
+  // Update state when organization data changes
   useEffect(() => {
-    if (!id) return; // Prevent effect from running if `id` is falsy
+    if (orgData) {
+      console.log('Organization data updated:', orgData);
+      setOrganisation(orgData);
+      setSelectedUserIds(orgData.users?.map(u => u.id) || []);
+    }
+  }, [orgData]);
 
-    setErrors(null); // Reset errors before fetching new user data
-
-    const fetchOrg = async () => {
-      setLoading(true); // Start loading
-
-      try {
-        const { data } = await axiosClient.get(`/organisations/${id}`);
-        console.log("Fetched Organisation Data:", data);
-        setOrganisation(data);
-        setSelectedUserIds(data.users?.map((u) => u.id) || []); // 👈 Prefill assigned users
-      } catch (err) {
-        setErrors(handleApiError(err));
-      } finally {
-        setLoading(false); // Ensure loading stops in all cases
-      }
-    };
-
-    fetchOrg();
-  }, [id]); // Include `id` as dependency to avoid unnecessary re-runs
+  // Remove the unnecessary refetch effect
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
-    setErrors(null);
 
     const payload = {
       ...organisation,
-      user_ids: selectedUserIds, // 👈 Include selected user IDs
+      user_ids: selectedUserIds,
     };
 
     try {
       if (organisation.id) {
-        await axiosClient.put(`/organisations/${organisation.id}`, payload);
-        dispatch(
-          notiActions.settingNotiMessage("Organisation updated successfully")
-        );
+        await updateOrganisationMutation.mutateAsync({
+          id: organisation.id,
+          ...payload
+        });
       } else {
-        await axiosClient.post(`/organisations`, payload);
-        dispatch(
-          notiActions.settingNotiMessage("Organisation created successfully")
-        );
+        await createOrganisationMutation.mutateAsync(payload);
       }
-
-      setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
       navigate("/organisations");
     } catch (err) {
-      setErrors(handleApiError(err));
+      console.error("Failed to save organisation:", err);
     }
   };
 
@@ -78,20 +63,32 @@ export default function OrganisationForm() {
 
   return (
     <>      
-      {id ? (<h1>Edit{organisation.name ? ` : ${organisation.name}` : ""}</h1>) : (<h1>New Organisation</h1>) }
+      {id ? (
+        <h1>Edit{organisation.name ? ` : ${organisation.name}` : ""}</h1>
+      ) : (
+        <h1>New Organisation</h1>
+      )}
       
       <div className="card animated fadeInDown">
-        {loading && <div className="text-center">Loading...</div>}
+        {isLoadingOrg && <div className="text-center">Loading...</div>}
 
-        {errors && (
+        {orgError && (
           <div className="alert">
-            {Object.keys(errors).map((key) => (
-              <p key={key}>{errors[key][0]}</p>
+            {Object.keys(orgError).map((key) => (
+              <p key={key}>{orgError[key][0]}</p>
             ))}
           </div>
         )}
 
-        {!loading && (
+        {(createOrganisationMutation.error || updateOrganisationMutation.error) && (
+          <div className="alert">
+            {Object.keys(createOrganisationMutation.error || updateOrganisationMutation.error).map((key) => (
+              <p key={key}>{(createOrganisationMutation.error || updateOrganisationMutation.error)[key][0]}</p>
+            ))}
+          </div>
+        )}
+
+        {!isLoadingOrg && (
           <form onSubmit={onSubmit}>
             <h3>Organisation Name</h3>
             <input
@@ -102,15 +99,29 @@ export default function OrganisationForm() {
               placeholder="Organisation Name"
               required={!organisation.id}
             />
-            {/* 👇 Embedded user selection table */}
+            
+            {/* User selection table */}
             <UsersSelectorTable
               selectedUserIds={selectedUserIds}
               setSelectedUserIds={setSelectedUserIds}
             />
-            <button className="btn" onClick={onCancel}>
+
+            <button 
+              type="button" 
+              className="btn" 
+              onClick={onCancel}
+              disabled={createOrganisationMutation.isPending || updateOrganisationMutation.isPending}
+            >
               Cancel
-            </button>{" "}
-            <button className="btn">Save</button>
+            </button>
+            {" "}
+            <button 
+              type="submit" 
+              className="btn"
+              disabled={createOrganisationMutation.isPending || updateOrganisationMutation.isPending}
+            >
+              {createOrganisationMutation.isPending || updateOrganisationMutation.isPending ? "Saving..." : "Save"}
+            </button>
           </form>
         )}
       </div>

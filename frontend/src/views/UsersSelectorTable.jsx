@@ -1,46 +1,51 @@
-import { useEffect, useState } from "react";
-import axiosClient from "../axios-client";
-import { handleApiError } from "../utils/apiErrorHandler";
+import { useState, useEffect } from "react";
+import { useUsers, useSelectedUsers } from "../hooks/queries/useUsers";
 
 export default function UsersSelectorTable({
   selectedUserIds,
   setSelectedUserIds,
 }) {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [paginationLinks, setPaginationLinks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0); // State to hold the total number of users
-  const [fromUser, setFromUser] = useState(0); // Starting user number on the current page
-  const [toUser, setToUser] = useState(0); // Ending user number on the current page
-  //const [searchQuery, setSearchQuery] = useState("");
-  const [errors, setErrors] = useState(null);
+  const [allUsers, setAllUsers] = useState(new Map()); // Use Map for efficient lookups
+  
+  // Fetch paginated users for the table
+  const {
+    data: usersData,
+    isLoading: isLoadingUsers,
+    error: usersError
+  } = useUsers(currentPage, "");
 
-  const fetchUsers = async (page = 1) => {
-    setLoading(true);
-    try {
-      const response = await axiosClient.get("/users", {
-        params: { page, search: "" },
-      });
+  // Fetch all selected users' data
+  const {
+    data: selectedUsersData,
+    isLoading: isLoadingSelected
+  } = useSelectedUsers(selectedUserIds);
 
-      setUsers(response.data.data);
-      setPaginationLinks(response.data.meta.links);
-      setCurrentPage(response.data.meta.current_page);
-      setTotalUsers(response.data.meta.total);
-      setFromUser(response.data.meta.from);
-      setToUser(response.data.meta.to);
-
-      setLoading(false);
-    } catch (err) {
-      setErrors(handleApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Update allUsers Map when new data comes in
   useEffect(() => {
-    fetchUsers(currentPage);
-  }, [currentPage]);
+    if (usersData?.data) {
+      setAllUsers(prevUsers => {
+        const newUsers = new Map(prevUsers);
+        usersData.data.forEach(user => {
+          newUsers.set(user.id, user);
+        });
+        return newUsers;
+      });
+    }
+  }, [usersData]);
+
+  // Add selected users to allUsers Map
+  useEffect(() => {
+    if (selectedUsersData) {
+      setAllUsers(prevUsers => {
+        const newUsers = new Map(prevUsers);
+        selectedUsersData.forEach(user => {
+          newUsers.set(user.id, user);
+        });
+        return newUsers;
+      });
+    }
+  }, [selectedUsersData]);
 
   const handlePageChange = (url) => {
     if (url) {
@@ -57,46 +62,59 @@ export default function UsersSelectorTable({
     );
   };
 
+  // Get user data by ID from allUsers Map
+  const getUserById = (id) => allUsers.get(id);
+
   return (
-    <div>
-      <h3>Assign Users</h3>
-      <div className="card animated fadeInDown">
-        {/* <input
-        type="text"
-        placeholder="Search Users"
-        onChange={(e) => {
-          //setSearchQuery(e.target.value);
-          setCurrentPage(1);
-        }}
-      /> */}
+    <div className="user-selector">
+      <h3>Select Users</h3>
+      
+      {usersError && (
+        <div className="alert">
+          {Object.keys(usersError).map((key) => (
+            <p key={key}>{usersError[key][0]}</p>
+          ))}
+        </div>
+      )}
 
-        {errors && (
-          <div className="alert">
-            {Object.keys(errors).map((key) => (
-              <p key={key}>{errors[key][0]}</p>
-            ))}
+      {/* Show selected users summary */}
+      {selectedUserIds.length > 0 && (
+        <div className="selected-users-summary">
+          <h4>Selected Users ({selectedUserIds.length})</h4>
+          <div className="selected-users-list">
+            {selectedUserIds.map(id => {
+              const user = getUserById(id);
+              if (!user) return null;
+              return (
+                <div key={id} className="selected-user-chip">
+                  {user.name}
+                  <button 
+                    onClick={() => toggleUserSelection(id)}
+                    className="remove-selected"
+                    title="Remove user"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
+      )}
 
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      {!isLoadingUsers && usersData && (
+        <>
+          <table>
+            <thead>
               <tr>
-                <td colSpan="5" className="text-center">
-                  Loading...
-                </td>
+                <th>Select</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
               </tr>
-            ) : (
-              users.map((user) => (
+            </thead>
+            <tbody>
+              {usersData.data.map((user) => (
                 <tr key={user.id}>
                   <td>
                     <input
@@ -105,39 +123,40 @@ export default function UsersSelectorTable({
                       onChange={() => toggleUserSelection(user.id)}
                     />
                   </td>
-                  <td>{user.id}</td>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
                   <td>{user.role}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        <div className="pagination-container">
-          <div>
-            Showing {fromUser} to {toUser} of {totalUsers} users
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="pagination-info">
+            Showing {usersData.meta.from} to {usersData.meta.to} of {usersData.meta.total} users
+            {selectedUserIds.length > 0 && ` (${selectedUserIds.length} selected)`}
           </div>
-          <div className="pagination">
-            {(Array.isArray(paginationLinks) ? paginationLinks : []).map(
-              (link, index) => (
-                <button
-                  type="button" // Prevent unintended form submission
-                  key={index}
-                  onClick={() => handlePageChange(link.url)}
-                  disabled={!link.url || link.active}
-                  style={{
-                    margin: "0 5px",
-                    fontWeight: link.active ? "bold" : "normal",
-                  }}
-                >
-                  {link.label.replace(/&laquo;|&raquo;/g, "")}
-                </button>
-              )
-            )}
+          <div className="pagination-container">
+            {usersData.meta.links.map((link, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (link.url) {
+                    handlePageChange(link.url);
+                  }
+                }}
+                className={`btn-pagination ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}
+                disabled={!link.url}
+              >
+                {link.label === "&laquo; Previous" ? "← Previous" : 
+                 link.label === "Next &raquo;" ? "Next →" : 
+                 link.label}
+              </button>
+            ))}
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

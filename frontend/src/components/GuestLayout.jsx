@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 //import { useStateContext } from "../contexts/ContextProvider";
 
 import { useSelector } from "react-redux";
+import Banner from "./Banner"; // Adjust the path as needed
 
 export default function GuestLayout() {
   // Via Context API
@@ -18,6 +19,7 @@ export default function GuestLayout() {
 
   return (
     <div>
+      <Banner />
       <Outlet />
     </div>
   );

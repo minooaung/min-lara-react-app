@@ -1,31 +1,16 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axiosClient from "../axios-client";
-
-// import { useStateContext } from "../contexts/ContextProvider";
-
-import { useDispatch } from "react-redux";
-import { authActions } from "../store/auth";
-
-import { handleApiError } from "../utils/apiErrorHandler";
+import { useLogin } from "../hooks/queries/useAuth";
 
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
+  const navigate = useNavigate();
 
-  const [errors, setErrors] = useState(null);
-
-  // Via Context API
-  //const { setUser, setToken } = useStateContext();
-
-  const dispatch = useDispatch();
-
-  const navigate = useNavigate(); // Create navigate function
+  const loginMutation = useLogin();
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
-
-    setErrors(null); // Reset errors before new request
 
     const payload = {
       email: emailRef.current.value,
@@ -33,19 +18,11 @@ export default function Login() {
     };
 
     try {
-      // Login directly without CSRF fetch (since it's initialized at startup)
-      const { data } = await axiosClient.post("/login", payload);
-
-      console.log("Login response data:", data);
-
-      dispatch(authActions.settingUser(data.user));
+      await loginMutation.mutateAsync(payload);
       navigate("/users");
     } catch (err) {
-      console.log("Login Error:", err);
-      setErrors(handleApiError(err));
-
-      // Auto-clear errors after 5 seconds for smooth UX
-      setTimeout(() => setErrors(null), 5000);
+      // Error handling is done in the mutation hook
+      console.error("Login failed:", err);
     }
   };
 
@@ -55,20 +32,26 @@ export default function Login() {
         <form onSubmit={onSubmit}>
           <h1 className="title">Login into your account</h1>
 
-          {errors && (
+          {loginMutation.error && (
             <div className="alert">
-              {Object.keys(errors).map((key) => (
-                <p key={key}>{errors[key][0]}</p>
+              {Object.keys(loginMutation.error).map((key) => (
+                <p key={key}>{loginMutation.error[key][0]}</p>
               ))}
             </div>
           )}
 
-          <input ref={emailRef} type="email" placeholder="Email" />
-          <input ref={passwordRef} type="password" placeholder="Password" />
-          <button className="btn btn-block">Login</button>
-
+          <input ref={emailRef} type="email" placeholder="Email" required />
+          <input ref={passwordRef} type="password" placeholder="Password" required />
+          
+          <button 
+            className="btn btn-block"
+            disabled={loginMutation.isPending}
+          >
+            {loginMutation.isPending ? "Logging in..." : "Login"}
+          </button>
+          
           <p className="message">
-            Not Registered? <Link to="/signup">Create an account</Link>
+            Not registered? <Link to="/signup">Create an account</Link>
           </p>
         </form>
       </div>

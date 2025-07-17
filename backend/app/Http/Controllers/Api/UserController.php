@@ -126,4 +126,19 @@ class UserController extends Controller
             'message' => 'User deleted successfully'
         ], 200);
     }    
+
+    /**
+     * Get selected users by their IDs
+     */
+    public function selected(Request $request)
+    {
+        $ids = explode(',', $request->get('ids', ''));
+        
+        if (empty($ids)) {
+            return response()->json([]);
+        }
+
+        $users = User::whereIn('id', $ids)->get();
+        return UserResource::collection($users);
+    }
 }

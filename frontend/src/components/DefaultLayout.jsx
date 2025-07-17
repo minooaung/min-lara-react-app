@@ -1,82 +1,37 @@
-import { Link, Navigate, Outlet, useNavigate } from "react-router-dom";
-
-// import { useStateContext } from "../contexts/ContextProvider";
-
-import { useEffect, useState } from "react";
+import { Link, Navigate, Outlet } from "react-router-dom";
+import { useEffect } from "react";
 import axiosClient from "../axios-client";
-
-import { useSelector, useDispatch } from "react-redux";
-import { authActions } from "../store/auth";
+import { useSelector } from "react-redux";
+import { useLogout } from "../hooks/queries/useAuth";
 
 export default function DefaultLayout() {
-  // Via Context API
-  // const { user, token, notification, setUser, setToken } = useStateContext();
-
-  const dispatch = useDispatch();
   const reduxUser = useSelector((state) => state.auth.user);
   const notification = useSelector(
     (state) => state.notification.notificationMessage
   );
-  const navigate = useNavigate(); // Use this for navigation
-  //const [loading, setLoading] = useState(true); // Add a loading state
+  const { mutate: logout } = useLogout();
 
-  const isAuthenticated = !!reduxUser; // Use Redux state
+  const isAuthenticated = !!reduxUser;
 
-  // Fetch user data only if user is authenticated and reduxUser is not set yet
-  useEffect(() => {
-    if (!reduxUser && isAuthenticated) {
-      const fetchUser = async () => {
-        try {
-          console.log("Fetching authenticated user data from API");
-
-          const { data } = await axiosClient.get("/user");
-          dispatch(authActions.settingUser(data));
-        } catch (error) {
-          dispatch(authActions.logout());
-        }
-      };
-
-      fetchUser();
-    }
-  }, [reduxUser, dispatch]); // Runs when reduxUser changes
-
-  // Periodically refresh session every 10 minutes
+  // Periodically refresh session every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       console.log("Session refreshed");
       axiosClient.get("/user").catch(() => {
-        dispatch(authActions.logout());
+        logout();
       });
-    }, 5 * 60 * 1000); // 5 or 10 minutes
+    }, 5 * 60 * 1000);
 
-    return () => clearInterval(interval); // Cleanup interval on unmount
-  }, [dispatch]);
-
-  // if (loading) {
-  //   return <p>Data Loading...</p>; // Show loading until user data is determined
-  // }
+    return () => clearInterval(interval);
+  }, [logout]);
 
   if (!isAuthenticated) {
-    console.log("Not Authenticated");
-    return <Navigate to="/login" />; // Here must be returned
-    // navigate("/login"); // Redirecting does not work
-  } else {
-    console.log("Authenticated");
-    //console.log(reduxUser);
+    return <Navigate to="/login" />;
   }
 
   const onLogout = (ev) => {
     ev.preventDefault();
-
-    axiosClient.post("/logout").then(() => {
-      // Via Context API
-      //   setUser({});
-      //   setToken(null);
-
-      dispatch(authActions.logout());
-
-      navigate("/login"); // Redirect properly after logout
-    });
+    logout();
   };
 
   return (
@@ -91,7 +46,6 @@ export default function DefaultLayout() {
         <header>
           <div></div>
           <div>
-            {/* {user.name}  */}
             {reduxUser?.name}
             <a href="#" onClick={onLogout} className="btn-logout">
               Logout

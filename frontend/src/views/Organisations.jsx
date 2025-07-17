@@ -1,57 +1,19 @@
-import { useEffect, useState } from "react";
-import axiosClient from "../axios-client";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-
-import { useDispatch } from "react-redux";
-import { notiActions } from "../store/notification";
-
-import { debounce } from "lodash"; // Run > npm install lodash
-
-import { handleApiError } from "../utils/apiErrorHandler";
+import { debounce } from "lodash";
+import { useOrganisations, useDeleteOrganisation } from "../hooks/queries/useOrganisations";
 
 export default function Organisations() {
-  const [organisations, setOrganisations] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const dispatch = useDispatch();
-
-  //-----------------
-  const [paginationLinks, setPaginationLinks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalOrganisations, setTotalOrganisations] = useState(0);
-  const [fromOrganisation, setFromOrganisation] = useState(0);
-  const [toOrganisation, setToOrganisation] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState(null);
+  
+  const { 
+    data: organisationsData,
+    isLoading
+  } = useOrganisations(currentPage, searchQuery);
 
-  const [errors, setErrors] = useState(null);
-
-  const fetchOrganisations = async (page = 1) => {
-    try {
-      setLoading(true);
-      const response = await axiosClient.get("/organisations", {
-        params: {
-          page,
-          search: searchQuery,
-        },
-      });
-
-      setOrganisations(response.data.data);
-      setPaginationLinks(response.data.meta.links);
-      setCurrentPage(response.data.meta.current_page);
-      setTotalOrganisations(response.data.meta.total);
-      setFromOrganisation(response.data.meta.from);
-      setToOrganisation(response.data.meta.to);
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching organisations:", error);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrganisations(currentPage);
-  }, [currentPage, searchQuery]);
+  const deleteOrganisationMutation = useDeleteOrganisation();
 
   const handlePageChange = (url) => {
     if (url) {
@@ -59,136 +21,101 @@ export default function Organisations() {
       setCurrentPage(Number(page));
     }
   };
-  //-----------------
+
+  // Wrapping search query update in debounce
+  const handleSearchChange = debounce((value) => {
+    setSearchQuery(value);
+    setCurrentPage(1); // Reset to first page on new search
+  }, 1100);
 
   const onDelete = async (org) => {
     if (!window.confirm(`Are you sure you want to delete [${org.name}]?`)) {
       return;
     }
 
-    setErrors(null);
-
     try {
-      const response = await axiosClient.delete(`/organisations/${org.id}`);
-
-      // Extract the backend message, with fallback
-      const message =
-        response.data?.message || "Organisation was deleted successfully";
-
-      dispatch(notiActions.settingNotiMessage(message));
-      setTimeout(() => dispatch(notiActions.settingNotiMessage(null)), 3000);
-
-      fetchOrganisations(1);
+      setError(null);
+      await deleteOrganisationMutation.mutateAsync(org.id);
     } catch (err) {
-      console.log(err);
-      setErrors(handleApiError(err));
-
-      setTimeout(() => setErrors(null), 3000);
+      console.error("Failed to delete organisation:", err.general[0]);
+      setError(err.general[0]);
+      setTimeout(() => setError(null), 3000);
     }
   };
 
-  const handleSearchChange = debounce((value) => {
-    setSearchQuery(value);
-  }, 1100);
-
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div style={{display: 'flex', justifyContent: "space-between", alignItems: "center"}}>
         <h1>Organisations</h1>
-        <Link to="/organisations/new" className="btn-add">
-          Add new
-        </Link>
+        <Link to="/organisations/new" className="btn-add">Add new</Link>
       </div>
       <div className="card animated fadeInDown">
-        <input
-          type="text"
-          className="search-filter-field"
-          placeholder="Search"
-          onChange={(e) => {
-            handleSearchChange(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+        <div className="search-box">
+          <input
+            placeholder="Type to search organisations..."
+            onInput={ev => handleSearchChange(ev.target.value)}
+            className="search-filter-field"
+          />
+        </div>
 
-        {errors && (
+        {isLoading && <div className="text-center">Loading...</div>}
+        
+        {error && (
           <div className="alert">
-            {Object.keys(errors).map((key) => (
-              <p key={key}>{errors[key][0]}</p>
-            ))}
+            <p>{error}</p>
           </div>
         )}
 
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Created Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          {loading && (
-            <tbody>
+        {!isLoading && (
+          <table>
+            <thead>
               <tr>
-                <td colSpan="5" className="text-center">
-                  Loading...
-                </td>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Users Count</th>
+                <th>Create Date</th>
+                <th>Actions</th>
               </tr>
-            </tbody>
-          )}
-          {!loading && (
-            <tbody>
-              {organisations.map((org) => (
-                <tr key={org.id}>
-                  <td>{org.id}</td>
-                  <td>{org.name}</td>
-                  <td>{org.created_at}</td>
-                  <td>
-                    <Link className="btn-edit" to={"/organisations/" + org.id}>
-                      Edit
-                    </Link>
-                    &nbsp;
-                    <button
-                      onClick={() => onDelete(org)}
-                      className="btn-delete"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          )}
-        </table>
-        <div className="pagination-container">
-          <div>
-            Showing {fromOrganisation} to {toOrganisation} of{" "}
-            {totalOrganisations} organisations
-          </div>
-          <div className="pagination">
-            {(Array.isArray(paginationLinks) ? paginationLinks : []).map(
-              (link, index) => (
-                <button
-                  key={index}
-                  onClick={() => handlePageChange(link.url)}
-                  disabled={!link.url || link.active}
-                  style={{
-                    margin: "0 5px",
-                    fontWeight: link.active ? "bold" : "normal",
-                  }}
-                >
-                  {link.label.replace(/&laquo;|&raquo;/g, "")}
-                </button>
-              )
+            </thead>
+            {organisationsData && (
+              <tbody>
+                {organisationsData.data.map(org => (
+                  <tr key={org.id}>
+                    <td>{org.id}</td>
+                    <td>{org.name}</td>
+                    <td>{org.users_count}</td>
+                    <td>{org.created_at}</td>
+                    <td>
+                      <Link className="btn-edit" to={'/organisations/' + org.id}>Edit</Link>
+                      &nbsp;
+                      <button onClick={ev => onDelete(org)} className="btn-delete">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
+          </table>
+        )}
+
+        {/* Pagination */}
+        {organisationsData && (
+          <div className="pagination-info">
+            Showing {organisationsData.meta.from} to {organisationsData.meta.to} of {organisationsData.meta.total} organisations
           </div>
-        </div>
+        )}
+        {organisationsData && organisationsData.meta.links && (
+          <div className="pagination-container">
+            {organisationsData.meta.links.map((link, index) => (
+              <button
+                key={index}
+                onClick={() => handlePageChange(link.url)}
+                className={`btn-pagination ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}
+                disabled={!link.url}
+                dangerouslySetInnerHTML={{__html: link.label}}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ class OrganisationResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'created_at' => Carbon::parse($this->created_at)->format('d/m/Y'),
+            'users_count' => $this->users_count,
             'users' => UserResource::collection($this->whenLoaded('users')) // Load users relationship if available
         ];
     }
