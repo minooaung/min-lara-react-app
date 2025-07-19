@@ -1,4 +1,5 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
+import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
 
 import Login from "./views/Login";
 import Signup from "./views/Signup";
@@ -15,7 +16,11 @@ import Report from "./views/Report";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <DefaultLayout />,
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "/",
@@ -57,7 +62,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <GuestLayout />,
+    element: (
+      <PublicOnlyRoute>
+        <GuestLayout />
+      </PublicOnlyRoute>
+    ),
     children: [
       {
         path: "/login",

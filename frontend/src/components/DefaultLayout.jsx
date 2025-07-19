@@ -1,4 +1,4 @@
-import { Link, Navigate, Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import axiosClient from "../axios-client";
 import { useSelector } from "react-redux";
@@ -10,8 +10,6 @@ export default function DefaultLayout() {
     (state) => state.notification.notificationMessage
   );
   const { mutate: logout } = useLogout();
-
-  const isAuthenticated = !!reduxUser;
 
   // Periodically refresh session every 5 minutes
   useEffect(() => {
@@ -25,38 +23,71 @@ export default function DefaultLayout() {
     return () => clearInterval(interval);
   }, [logout]);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
   const onLogout = (ev) => {
     ev.preventDefault();
     logout();
   };
 
   return (
-    <div id="defaultLayout">
-      <aside>
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/users">Users</Link>
-        <Link to="/organisations">Organisations</Link>
-        <Link to="/report">Report</Link>
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-blue-600 text-white p-6">
+        <nav className="space-y-2">
+          <Link 
+            to="/dashboard" 
+            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Dashboard
+          </Link>
+          <Link 
+            to="/users" 
+            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Users
+          </Link>
+          <Link 
+            to="/organisations" 
+            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Organisations
+          </Link>
+          <Link 
+            to="/report" 
+            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Report
+          </Link>
+        </nav>
       </aside>
-      <div className="content">
-        <header>
-          <div></div>
-          <div>
-            {reduxUser?.name}
-            <a href="#" onClick={onLogout} className="btn-logout">
-              Logout
-            </a>
+
+      <div className="flex-1 flex flex-col">
+        <header className="bg-white shadow-sm border-b border-gray-200">
+          <div className="px-6 py-4 flex justify-between items-center">
+            <div className="flex-1">
+              {/* Page title will go here from child components */}
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-700 font-medium">{reduxUser?.name}</span>
+              <button
+                onClick={onLogout}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </header>
-        <main>
+
+        <main className="flex-1 p-6">
           <Outlet />
         </main>
       </div>
-      {notification && <div className="notification">{notification}</div>}
+
+      {notification && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in">
+          {notification}
+        </div>
+      )}
     </div>
   );
 }
