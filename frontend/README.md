@@ -5,9 +5,12 @@ The frontend application for the Min Lara React project, built with React and Vi
 ## Features
 
 - Modern React with Hooks
-- Redux for state management
+- TanStack Query (React Query) for server state management
+- Redux for global UI state management
 - Vite for lightning-fast development
-- Responsive layouts
+- Tailwind CSS for utility-first styling
+- Responsive layouts with mobile-first design
+- Interactive dashboard with real-time metrics
 - Organization management interface
 - User management dashboard
 - Protected routes with authentication
@@ -17,8 +20,11 @@ The frontend application for the Min Lara React project, built with React and Vi
 
 - React 18+
 - Vite
-- Redux for global state management
+- TanStack Query v5 for server state
+- Redux for UI state management
 - React Router v6
+- Tailwind CSS v3
+- Chart.js with React Chart.js 2
 - Axios for API communication
 
 ## Project Structure
@@ -26,13 +32,36 @@ The frontend application for the Min Lara React project, built with React and Vi
 ```
 src/
 ├── components/         # Reusable UI components
-├── store/             # Redux store, actions, and reducers
+│   ├── dashboard/     # Dashboard-specific components
+│   └── ...           # Other UI components
+├── hooks/             # Custom hooks
+│   ├── queries/      # TanStack Query hooks
+│   └── ...          # Other custom hooks
+├── store/             # Redux store for UI state
 │   ├── auth.js        # Authentication state management
 │   ├── notification.js # Notification state management
 │   └── index.js       # Root reducer and store configuration
 ├── utils/             # Helper functions
 └── views/             # Page components
 ```
+
+## Dashboard Module
+
+The application features a comprehensive dashboard that provides:
+
+### Features
+- Real-time statistics and metrics
+- Interactive charts and visualizations
+- Organization growth tracking
+- User role distribution analysis
+- Quick action shortcuts
+- Key performance indicators (KPIs)
+
+### Charts and Visualizations
+- Organization Growth Chart - Track organization creation over time
+- User Role Distribution - Visual breakdown of user roles
+- Activity metrics and trends
+- Interactive data tooltips
 
 ## Reports Module
 
@@ -94,9 +123,12 @@ The application includes a powerful reporting system that allows users to genera
 Key dependencies include:
 
 - `react` and `react-dom` - Core React library
+- `@tanstack/react-query` - Powerful server state management
 - `@reduxjs/toolkit` - Modern Redux with simplified state management
 - `react-redux` - React bindings for Redux
 - `react-router-dom` - Routing
+- `chart.js` and `react-chartjs-2` - Interactive charts
+- `tailwindcss` - Utility-first CSS framework
 - `axios` - HTTP client
 - `@vitejs/plugin-react` - Vite React plugin
 
