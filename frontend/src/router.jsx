@@ -1,78 +1,78 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
-
-import Login from "./views/Login";
-import Signup from "./views/Signup";
-import Users from "./views/Users";
-import NotFound from "./views/NotFound";
+import Dashboard from "./views/Dashboard";
 import DefaultLayout from "./components/DefaultLayout";
 import GuestLayout from "./components/GuestLayout";
-import Dashboard from "./views/Dashboard";
+import Login from "./views/Login";
+import NotFound from "./views/NotFound";
+import Signup from "./views/Signup";
+import Users from "./views/Users";
 import UserForm from "./views/UserForm";
 import Organisations from "./views/Organisations";
 import OrganisationForm from "./views/OrganisationForm";
 import Report from "./views/Report";
+import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <DefaultLayout />,
     children: [
       {
-        path: "/",
-        element: <Navigate to="/users" />,
+        path: '/',
+        element: <Navigate to="/dashboard" />
       },
       {
-        path: "/dashboard",
-        element: <Dashboard />,
+        path: '/dashboard',
+        element: <ProtectedRoute><Dashboard /></ProtectedRoute>
       },
       {
-        path: "/users",
-        element: <Users />,
+        path: '/users',
+        element: <ProtectedRoute><Users /></ProtectedRoute>
       },
       {
-        path: "/users/new",
-        element: <UserForm key="userCreate" />,
+        path: '/users/new',
+        element: <ProtectedRoute><UserForm key="userCreate" /></ProtectedRoute>
       },
       {
-        path: "/users/:id",
-        element: <UserForm key="userUpdate" />,
+        path: '/users/:id',
+        element: <ProtectedRoute><UserForm key="userUpdate" /></ProtectedRoute>
       },
       {
-        path: "/organisations",
-        element: <Organisations />,
+        path: '/organisations',
+        element: <ProtectedRoute><Organisations /></ProtectedRoute>
       },
       {
-        path: "/organisations/new",
-        element: <OrganisationForm key="orgCreate" />,
+        path: '/organisations/new',
+        element: <ProtectedRoute><OrganisationForm key="orgCreate" /></ProtectedRoute>
       },
       {
-        path: "/organisations/:id",
-        element: <OrganisationForm key="orgUpdate" />,
+        path: '/organisations/:id',
+        element: <ProtectedRoute><OrganisationForm key="orgUpdate" /></ProtectedRoute>
       },
       {
-        path: "/report",
-        element: <Report />,
-      },
-    ],
+        path: '/report',
+        element: <ProtectedRoute><Report /></ProtectedRoute>
+      }
+    ]
   },
   {
-    path: "/",
+    path: '/',
     element: <GuestLayout />,
     children: [
       {
-        path: "/login",
-        element: <Login />,
+        path: '/login',
+        element: <PublicOnlyRoute><Login /></PublicOnlyRoute>
       },
       {
-        path: "/signup",
-        element: <Signup />,
-      },
-    ],
+        path: '/signup',
+        element: <PublicOnlyRoute><Signup /></PublicOnlyRoute>
+      }
+    ]
   },
   {
     path: "*",
-    element: <NotFound />,
-  },
+    element: <NotFound />
+  }
 ]);
 
 export default router;

@@ -23,7 +23,8 @@ class OrganisationController extends Controller
     {
         $search = $request->query('search');
 
-        $organisations = Organisation::select(['id', 'name', 'created_at'])
+        $organisations = Organisation::withCount('users')
+            //->select(['id', 'name', 'created_at', 'users_count'])
             ->when(!empty($search), function ($query) use ($search) {
                 return $query->where('id', intval($search))
                              ->orWhere('name', 'LIKE', "%{$search}%");

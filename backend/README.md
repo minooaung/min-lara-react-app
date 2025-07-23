@@ -12,6 +12,18 @@ A Laravel-based REST API that provides authentication, user management, and orga
 -   Secure logout with session invalidation
 -   Session inactivity timeout
 
+### Dashboard
+
+-   Real-time statistics and metrics
+-   Organization growth tracking over time
+-   User role distribution visualization
+-   Quick action shortcuts for common tasks
+-   Key performance indicators (KPIs)
+    -   Total users count
+    -   Total organizations count
+    -   Recent activity metrics
+    -   User role distribution stats
+
 ### User Management
 
 -   CRUD operations for users
@@ -56,6 +68,12 @@ POST /api/signup     - Register a new user
 POST /api/login      - Authenticate user
 POST /api/logout     - Logout user (authenticated)
 GET  /api/user       - Get authenticated user
+```
+
+### Dashboard Endpoints
+
+```
+GET  /api/dashboard/stats     - Get dashboard statistics and metrics
 ```
 
 ### User Management Endpoints
