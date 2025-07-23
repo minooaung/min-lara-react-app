@@ -1,6 +1,6 @@
 # Min Lara React App
 
-A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, user management capabilities, and a comprehensive reporting system.
+A full-stack web application built with Laravel backend API and React frontend that provides user authentication, organization management, user management capabilities, an interactive dashboard, and a comprehensive reporting system.
 
 ## Architecture
 
@@ -19,9 +19,36 @@ min-lara-react-app/
 - Organization Management
 - User Management
 - Role-based Access Control (Admin/Employee)
-- Modern React Frontend with Redux
+- Interactive Dashboard with Real-time Metrics
+- Modern React Frontend with TanStack Query and Redux
 - RESTful Laravel API Backend
 - MySQL Database
+
+### Dashboard Features
+- Real-time Statistics and Metrics
+- Interactive Charts and Visualizations
+  - Organization Growth Chart
+  - User Role Distribution Chart
+- Quick Action Shortcuts
+- Key Performance Indicators (KPIs)
+  - Total Users Count
+  - Total Organizations Count
+  - Recent Activity Metrics
+  - User Role Distribution Stats
+
+### Organization Management
+- CRUD Operations for Organizations
+- User-Organization Relationships
+- Track User Assignments
+- Search and Filter Capabilities
+- Pagination Support
+
+### User Management
+- CRUD Operations for Users
+- Role-based Access (Admin/Employee)
+- Admin User Limit Controls
+- Search Users by ID, Name, or Email
+- Pagination Support
 
 ### Reporting System
 - Multiple Output Formats:
@@ -34,6 +61,24 @@ min-lara-react-app/
 - Interactive Report Generation Interface
 - Real-time HTML Preview
 - Direct File Downloads
+
+## Technical Stack
+
+### Frontend
+- React 18+
+- Vite for Build Tooling
+- TanStack Query v5 for Server State
+- Redux for UI State
+- Tailwind CSS for Styling
+- Chart.js for Data Visualization
+- React Router v6
+- Axios for API Communication
+
+### Backend
+- Laravel 10.x
+- MySQL/MariaDB
+- Laravel Sanctum for Authentication
+- PHP 8.x
 
 ## Prerequisites
 
@@ -92,3 +137,5 @@ Before you begin, ensure you have the following installed:
 - Input Validation and Sanitization
 - Protected Routes with Authentication
 - Secure Password Hashing
+- Database Transaction Safety
+- Input Sanitization Middleware

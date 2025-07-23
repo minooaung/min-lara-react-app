@@ -20,8 +20,8 @@ export function PublicOnlyRoute({ children }) {
   const location = useLocation();
 
   if (user) {
-    // Redirect to the attempted page or default to /users
-    const to = location.state?.from?.pathname || "/users";
+    // Redirect to the attempted page or default to /dashboard
+    const to = location.state?.from?.pathname || "/dashboard";
     return <Navigate to={to} replace />;
   }
 

@@ -1,10 +1,11 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import axiosClient from "../axios-client";
 import { useSelector } from "react-redux";
 import { useLogout } from "../hooks/queries/useAuth";
 
 export default function DefaultLayout() {
+  const location = useLocation();
   const reduxUser = useSelector((state) => state.auth.user);
   const notification = useSelector(
     (state) => state.notification.notificationMessage
@@ -28,6 +29,10 @@ export default function DefaultLayout() {
     logout();
   };
 
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -35,25 +40,41 @@ export default function DefaultLayout() {
         <nav className="space-y-2">
           <Link 
             to="/dashboard" 
-            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className={`block px-4 py-2 rounded-lg transition-colors ${
+              isActive('/dashboard') 
+                ? 'bg-blue-700 text-white font-medium' 
+                : ''
+            }`}
           >
             Dashboard
           </Link>
           <Link 
             to="/users" 
-            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className={`block px-4 py-2 rounded-lg transition-colors ${
+              isActive('/users') 
+                ? 'bg-blue-700 text-white font-medium' 
+                : ''
+            }`}
           >
             Users
           </Link>
           <Link 
             to="/organisations" 
-            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className={`block px-4 py-2 rounded-lg transition-colors ${
+              isActive('/organisations') 
+                ? 'bg-blue-700 text-white font-medium' 
+                : ''
+            }`}
           >
             Organisations
           </Link>
           <Link 
             to="/report" 
-            className="block px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className={`block px-4 py-2 rounded-lg transition-colors ${
+              isActive('/report') 
+                ? 'bg-blue-700 text-white font-medium' 
+                : ''
+            }`}
           >
             Report
           </Link>

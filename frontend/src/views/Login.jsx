@@ -19,7 +19,7 @@ export default function Login() {
 
     try {
       await loginMutation.mutateAsync(payload);
-      navigate('/users', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       // Error handling is done in the mutation hook
       console.error("Login failed:", err);

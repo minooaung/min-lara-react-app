@@ -21,6 +21,8 @@ export const useUsers = (page = 1, search = "") => {
     queryKey: userKeys.list({ page, search }),
     queryFn: () => axios.get("/users", { params: { page, search } })
       .then(response => response.data),
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    cacheTime: 300000, // Cache for 5 minutes
   });
 };
 
@@ -42,6 +44,8 @@ export const useSelectedUsers = (userIds = []) => {
       });
     },
     enabled: userIds.length > 0,
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    cacheTime: 300000, // Cache for 5 minutes
   });
 };
 

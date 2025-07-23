@@ -23,7 +23,7 @@ export default function Signup() {
 
     try {
       await signupMutation.mutateAsync(payload);
-      navigate('/users', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       // Error handling is done in the mutation hook
       console.error("Signup failed:", err);

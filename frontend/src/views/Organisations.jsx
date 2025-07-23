@@ -37,8 +37,9 @@ export default function Organisations() {
       setError(null);
       await deleteOrganisationMutation.mutateAsync(org.id);
     } catch (err) {
-      console.error("Failed to delete organisation:", err.general[0]);
-      setError(err.general[0]);
+      // Get error message from response or use a default message
+      const errorMessage = err.response?.data?.error || 'Failed to delete organisation';
+      setError(errorMessage);
       setTimeout(() => setError(null), 3000);
     }
   };
