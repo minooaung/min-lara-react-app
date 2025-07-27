@@ -31,7 +31,9 @@ export default function OrganisationForm() {
   useEffect(() => {
     if (orgData) {
       setOrganisation(orgData);
-      setSelectedUserIds(orgData.users?.map(u => u.id) || []);
+      // Only set the IDs of users that exist in the organization data
+      const existingUserIds = orgData.users?.filter(u => u.id).map(u => u.id) || [];
+      setSelectedUserIds(existingUserIds);
     }
   }, [orgData]);
 

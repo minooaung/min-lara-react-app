@@ -36,10 +36,10 @@ export default function UsersSelectorTable({
 
   // Add selected users to allUsers Map
   useEffect(() => {
-    if (selectedUsersData) {
+    if (selectedUsersData?.data) {
       setAllUsers(prevUsers => {
         const newUsers = new Map(prevUsers);
-        selectedUsersData.forEach(user => {
+        selectedUsersData.data.forEach(user => {
           newUsers.set(user.id, user);
         });
         return newUsers;
@@ -66,6 +66,15 @@ export default function UsersSelectorTable({
   // Get user data by ID from allUsers Map
   const getUserById = (id) => allUsers.get(id);
 
+  // Show loading state if either users or selected users are loading
+  if (isLoadingUsers || isLoadingSelected) {
+    return (
+      <div className="text-center py-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {usersError && (
@@ -83,11 +92,15 @@ export default function UsersSelectorTable({
       {/* Show selected users summary */}
       {selectedUserIds.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Selected Users ({selectedUserIds.length})</h4>
+          <h4 className="text-sm font-medium text-gray-700">Selected Users ({selectedUserIds.filter(id => getUserById(id)).length})</h4>
           <div className="flex flex-wrap gap-2">
             {selectedUserIds.map(id => {
               const user = getUserById(id);
-              if (!user) return null;
+              if (!user) {
+                // If a selected user doesn't exist anymore, remove it from the selection
+                setSelectedUserIds(prev => prev.filter(uid => uid !== id));
+                return null;
+              }
               return (
                 <div 
                   key={id} 
@@ -109,13 +122,7 @@ export default function UsersSelectorTable({
         </div>
       )}
 
-      {isLoadingUsers && (
-        <div className="text-center py-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        </div>
-      )}
-
-      {!isLoadingUsers && usersData && (
+      {usersData && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
