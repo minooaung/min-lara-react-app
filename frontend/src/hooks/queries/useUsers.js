@@ -33,14 +33,13 @@ export const useSelectedUsers = (userIds = []) => {
   return useQuery({
     queryKey: userKeys.selected(userIds),
     queryFn: () => {
-      if (!userIds.length) return Promise.resolve([]);
+      if (!userIds.length) return { data: [] };
       return axios.get("/users/selected", { 
         params: { ids: userIds.join(",") } 
       })
       .then(response => {
-        // Handle both array response and data.data response
-        const users = response.data.data || response.data;
-        return Array.isArray(users) ? users : [];
+        // Return the response directly since it's already in the correct format
+        return response.data;
       });
     },
     enabled: userIds.length > 0,
