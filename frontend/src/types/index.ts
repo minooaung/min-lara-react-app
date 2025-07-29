@@ -64,7 +64,7 @@ export interface PaginatedResponse<T> {
 }
 
 // Auth related types
-export interface LoginCredentials {
+export interface LoginCredentials extends Record<string, unknown> {
   email: string;
   password: string;
 }
@@ -81,16 +81,36 @@ export interface AuthState {
 }
 
 // Dashboard related types
-export interface DashboardStats {
-  total_users: number;
-  total_organisations: number;
-  recent_users: User[];
-  recent_organisations: Organisation[];
-  user_roles_distribution: {
-    [key in UserRole]: number;
-  };
-  organisation_growth: {
-    date: string;
-    count: number;
-  }[];
+interface DashboardStats {
+  totalUsers: number;
+  totalOrganizations: number;
+  adminUsers: number;
+  activeOrganizations: number;
+}
+
+interface UserRoles {
+  adminCount: number;
+  employeeCount: number;
+}
+
+interface Growth {
+  labels: string[];
+  users: number[];
+  organizations: number[];
+}
+
+interface DashboardMeta {
+  lastUpdated: string;
+}
+
+interface DashboardData {
+  stats: DashboardStats;
+  userRoles: UserRoles;
+  growth: Growth;
+  meta: DashboardMeta;
+}
+
+export interface DashboardResponse {
+  success: boolean;
+  data: DashboardData;
 } 

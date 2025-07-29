@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import { debounce } from "lodash";
 import { useUsers, useDeleteUser } from "../hooks/queries/useUsers";
 import { User, PaginationLink } from "../types";
+import { AxiosError } from "axios";
+
+interface ApiErrorResponse {
+  error?: string;
+  message?: string;
+  general?: string[];
+}
 
 export default function Users(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,8 +44,10 @@ export default function Users(): JSX.Element {
     try {
       setError(null);
       await deleteUserMutation.mutateAsync(u.id);
-    } catch (err: any) {
-      setError(err.general?.[0] || "Failed to delete user");
+    } catch (err) {
+      const error = err as AxiosError<ApiErrorResponse>;
+      const errorMessage = error.response?.data?.general?.[0] || error.response?.data?.error || error.response?.data?.message || "Failed to delete user";
+      setError(errorMessage);
       setTimeout(() => setError(null), 3000);
     }
   };

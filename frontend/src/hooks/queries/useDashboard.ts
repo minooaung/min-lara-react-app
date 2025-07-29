@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAxios } from '../useAxios';
-import { ApiResponse } from '../../types';
+import { DashboardResponse } from '../../types';
 
-export const useDashboardStats = <T = any>() => {
+export const useDashboardStats = () => {
   const axios = useAxios();
 
   return useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: async () => {
-      const { data } = await axios.get<ApiResponse<T>>('/dashboard/stats');
-      return data.data;
+      const { data } = await axios.get<DashboardResponse>('/dashboard/stats');
+      return data;
     },
     // Refresh every minute
     refetchInterval: 60 * 1000,

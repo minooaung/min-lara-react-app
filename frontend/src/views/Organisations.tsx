@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { debounce } from "lodash";
 import { useOrganisations, useDeleteOrganisation } from "../hooks/queries/useOrganisations";
 import { Organisation, PaginationLink } from "../types";
+import { AxiosError } from "axios";
+
+interface ApiErrorResponse {
+  error?: string;
+  message?: string;
+}
 
 export default function Organisations(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,9 +43,10 @@ export default function Organisations(): JSX.Element {
     try {
       setError(null);
       await deleteOrganisationMutation.mutateAsync(org.id);
-    } catch (err: any) {
+    } catch (err) {
       // Get error message from response or use a default message
-      const errorMessage = err.response?.data?.error || 'Failed to delete organisation';
+      const error = err as AxiosError<ApiErrorResponse>;
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to delete organisation';
       setError(errorMessage);
       setTimeout(() => setError(null), 3000);
     }

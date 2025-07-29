@@ -1,6 +1,5 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQueryClient } from '@tanstack/react-query';
 import UsersSelectorTable from "./UsersSelectorTable";
 import { useOrganisation, useCreateOrganisation, useUpdateOrganisation } from "../hooks/queries/useOrganisations";
 import { User, OrganisationData, UpdateOrganisationData } from "../types";
@@ -26,7 +25,6 @@ interface ApiError {
 export default function OrganisationForm(): JSX.Element {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]); // Track selected users
   const [organisation, setOrganisation] = useState<OrganisationFormData>({

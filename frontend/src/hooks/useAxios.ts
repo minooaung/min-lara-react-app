@@ -11,6 +11,9 @@ interface ApiErrorResponse {
   details?: Record<string, string[]>;
 }
 
+// Define a default type for request data
+type RequestData = Record<string, unknown>;
+
 export const useAxios = (): UseAxiosReturn => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -31,13 +34,16 @@ export const useAxios = (): UseAxiosReturn => {
   };
 
   return {
-    get: <T = any>(url: string, config?: AxiosRequestConfig) => 
-      axiosClient.get<T>(url, config).catch(handleError as (error: AxiosError<unknown>) => never),
-    post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => 
-      axiosClient.post<T>(url, data, config).catch(handleError as (error: AxiosError<unknown>) => never),
-    put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => 
-      axiosClient.put<T>(url, data, config).catch(handleError as (error: AxiosError<unknown>) => never),
-    delete: <T = any>(url: string, config?: AxiosRequestConfig) => 
-      axiosClient.delete<T>(url, config).catch(handleError as (error: AxiosError<unknown>) => never),
+    get: <TResponse = unknown>(url: string, config?: AxiosRequestConfig) => 
+      axiosClient.get<TResponse>(url, config).catch(handleError as (error: AxiosError<unknown>) => never),
+    
+    post: <TResponse = unknown, TData = RequestData>(url: string, data?: TData, config?: AxiosRequestConfig) => 
+      axiosClient.post<TResponse>(url, data, config).catch(handleError as (error: AxiosError<unknown>) => never),
+    
+    put: <TResponse = unknown, TData = RequestData>(url: string, data?: TData, config?: AxiosRequestConfig) => 
+      axiosClient.put<TResponse>(url, data, config).catch(handleError as (error: AxiosError<unknown>) => never),
+    
+    delete: <TResponse = unknown>(url: string, config?: AxiosRequestConfig) => 
+      axiosClient.delete<TResponse>(url, config).catch(handleError as (error: AxiosError<unknown>) => never),
   };
 }; 

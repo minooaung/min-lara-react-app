@@ -15,6 +15,9 @@ interface GenerateReportParams {
   outputFormat: OutputFormat;
 }
 
+// Define type for report response data based on format
+type ReportResponseData = string | Blob | Record<string, unknown>;
+
 // Helper function to get MIME type and file extension
 const getReportMetadata = (outputFormat: OutputFormat): ReportMetadata => {
   const mimeTypes: Record<OutputFormat, string> = {
@@ -41,18 +44,27 @@ const getReportMetadata = (outputFormat: OutputFormat): ReportMetadata => {
 
 // Helper function to handle report response
 const handleReportResponse = (
-  response: AxiosResponse<any>,
+  response: AxiosResponse<ReportResponseData>,
   reportType: ReportType,
   outputFormat: OutputFormat
 ): string | null => {
   if (outputFormat === "html") {
-    return response.data;
+    return response.data as string;
   }
 
   // For all file downloads (PDF, Excel, CSV, JSON)
   const { mimeType, fileExtension } = getReportMetadata(outputFormat);
-  const data = outputFormat === "json" ? JSON.stringify(response.data, null, 2) : response.data;
-  const blob = new Blob([data], { type: mimeType });
+  
+  let blob: Blob;
+  if (outputFormat === "json") {
+    const jsonStr = JSON.stringify(response.data as Record<string, unknown>, null, 2);
+    blob = new Blob([jsonStr], { type: mimeType });
+  } else if (response.data instanceof Blob) {
+    blob = response.data;
+  } else {
+    blob = new Blob([response.data as string], { type: mimeType });
+  }
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -73,7 +85,7 @@ export const useGenerateReport = () => {
       const isHtml = outputFormat === "html";
       const isJson = outputFormat === "json";
 
-      const response = await axios.post(
+      const response = await axios.post<ReportResponseData>(
         "/reports/generate",
         {
           reportType,

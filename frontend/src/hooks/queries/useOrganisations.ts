@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAxios } from '../useAxios';
-import { ApiResponse, Organisation, PaginatedResponse } from '../../types';
+import { Organisation, PaginatedResponse } from '../../types';
 
 // Define query keys as constants for type safety and reusability
 const organisationKeys = {
@@ -54,7 +54,7 @@ export const useCreateOrganisation = () => {
 
   return useMutation({
     mutationFn: async (data: OrganisationData) => {
-      const response = await axios.post<Organisation>('/organisations', data);
+      const response = await axios.post<Organisation, OrganisationData>('/organisations', data);
       return response.data;
     },
     onSuccess: (data) => {

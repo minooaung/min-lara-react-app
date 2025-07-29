@@ -6,10 +6,6 @@ import QuickActions from '../components/dashboard/QuickActions';
 import { useDashboardStats } from '../hooks/queries/useDashboard';
 import { AxiosError } from 'axios';
 
-interface DashboardMeta {
-  lastUpdated: string;
-}
-
 interface DashboardError {
   response?: {
     data?: {
@@ -19,44 +15,19 @@ interface DashboardError {
   message?: string;
 }
 
-interface DashboardStatsData {
-  totalUsers: number;
-  totalOrganizations: number;
-  adminUsers: number;
-  activeOrganizations: number;
-}
-
-interface UserRolesData {
-  adminCount: number;
-  employeeCount: number;
-}
-
-interface GrowthData {
-  labels: string[];
-  organizations: number[];
-  users: number[];
-}
-
-interface DashboardData {
-  meta: DashboardMeta;
-  stats: DashboardStatsData;
-  userRoles: UserRolesData;
-  growth: GrowthData;
-}
-
 export default function Dashboard(): JSX.Element {
-  const { data: dashboardData, isLoading, error } = useDashboardStats<DashboardData>();
+  const { data: response, isLoading, error } = useDashboardStats();
   const axiosError = error as AxiosError<DashboardError>;
 
   // Debug logging
   useEffect(() => {
-    if (dashboardData) {
-      console.log('Dashboard Data:', dashboardData);
+    if (response) {
+      console.log('Dashboard Data:', response);
     }
     if (error) {
       console.error('Dashboard Error:', error);
     }
-  }, [dashboardData, error]);
+  }, [response, error]);
 
   if (isLoading) {
     return (
@@ -83,7 +54,7 @@ export default function Dashboard(): JSX.Element {
     );
   }
 
-  if (!dashboardData) {
+  if (!response?.data) {
     return (
       <div className="rounded-md bg-yellow-50 p-4">
         <div className="flex">
@@ -100,12 +71,14 @@ export default function Dashboard(): JSX.Element {
     );
   }
 
+  const { stats, userRoles, growth, meta } = response.data;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
         <div className="text-sm text-gray-500">
-          Last updated: {new Date(dashboardData.meta.lastUpdated).toLocaleString()}
+          Last updated: {meta.lastUpdated ? new Date(meta.lastUpdated).toLocaleString() : new Date().toLocaleString()}
         </div>
       </div>
 
@@ -113,12 +86,24 @@ export default function Dashboard(): JSX.Element {
       <QuickActions />
 
       {/* Statistics Cards */}
-      <DashboardStats stats={dashboardData.stats} />
+      <DashboardStats stats={{
+        totalUsers: stats.totalUsers,
+        totalOrganizations: stats.totalOrganizations,
+        adminUsers: stats.adminUsers,
+        activeOrganizations: stats.activeOrganizations
+      }} />
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UserRoleChart data={dashboardData.userRoles} />
-        <OrganizationGrowthChart data={dashboardData.growth} />
+        <UserRoleChart data={{
+          adminCount: userRoles.adminCount,
+          employeeCount: userRoles.employeeCount
+        }} />
+        <OrganizationGrowthChart data={{
+          labels: growth.labels,
+          organizations: growth.organizations,
+          users: growth.users
+        }} />
       </div>
     </div>
   );

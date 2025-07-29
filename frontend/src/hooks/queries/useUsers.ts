@@ -10,7 +10,7 @@ interface UserFilters {
   search?: string;
 }
 
-interface CreateUserData {
+interface CreateUserData extends Record<string, unknown> {
   name: string;
   email: string;
   password: string;
