@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import UsersSelectorTable from "./UsersSelectorTable";
 import { useOrganisation, useCreateOrganisation, useUpdateOrganisation } from "../hooks/queries/useOrganisations";
@@ -11,22 +11,14 @@ interface OrganisationFormData {
 }
 
 interface ValidationErrors {
-  [key: string]: string[];
-}
-
-interface ApiError {
-  response?: {
-    data?: {
-      error?: string;
-    };
-  };
+  [key: string]: string | string[];
 }
 
 export default function OrganisationForm(): JSX.Element {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]); // Track selected users
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [organisation, setOrganisation] = useState<OrganisationFormData>({
     id: null,
     name: "",
@@ -53,7 +45,7 @@ export default function OrganisationForm(): JSX.Element {
     }
   }, [orgData]);
 
-  const onSubmit = async (ev: FormEvent<HTMLFormElement>) => {
+  const onSubmit = useCallback(async (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
 
     try {
@@ -72,14 +64,15 @@ export default function OrganisationForm(): JSX.Element {
         await createOrganisationMutation.mutateAsync(createData);
       }
 
-      // Navigate after successful mutation
       navigate("/organisations");
     } catch (err) {
       console.error("Failed to save organisation:", err);
     }
-  };
+  }, [organisation, selectedUserIds, createOrganisationMutation, updateOrganisationMutation, navigate]);
 
-  const onCancel = () => navigate("/organisations");
+  const onCancel = useCallback(() => navigate("/organisations"), [navigate]);
+
+  const validationErrors = (orgError || createOrganisationMutation.error || updateOrganisationMutation.error) as ValidationErrors | null;
 
   if (isLoadingOrg) {
     return (
@@ -89,10 +82,6 @@ export default function OrganisationForm(): JSX.Element {
     );
   }
 
-  const validationErrors = orgError as ValidationErrors | null;
-  const createError = createOrganisationMutation.error as ApiError | null;
-  const updateError = updateOrganisationMutation.error as ApiError | null;
-
   return (
     <div>
       <div className="flex justify-between items-start mb-6">
@@ -101,20 +90,15 @@ export default function OrganisationForm(): JSX.Element {
         </h1>
       </div>
 
-      {(validationErrors || createError || updateError) && (
+      {validationErrors && (
         <div className="rounded-md bg-red-100 p-4 mb-4">
           <div className="flex">
             <div className="ml-3">
-              {validationErrors && Object.keys(validationErrors).map((key) => (
-                <p key={key} className="text-sm font-medium text-red-800">{validationErrors[key][0]}</p>
-              ))}
-              {(createError || updateError) && (
-                <p className="text-sm font-medium text-red-800">
-                  {createError?.response?.data?.error || 
-                   updateError?.response?.data?.error || 
-                   'An error occurred'}
+              {Object.entries(validationErrors).map(([key, value]) => (
+                <p key={key} className="text-sm font-medium text-red-800">
+                  {Array.isArray(value) ? value[0] : value}
                 </p>
-              )}
+              ))}
             </div>
           </div>
         </div>

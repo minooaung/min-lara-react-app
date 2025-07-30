@@ -1,4 +1,4 @@
-import { useState, useEffect, MouseEvent } from "react";
+import { useState, useEffect, MouseEvent, useCallback } from "react";
 import { useUsers, useSelectedUsers } from "../hooks/queries/useUsers";
 import { User, PaginationLink } from "../types";
 
@@ -16,8 +16,8 @@ export default function UsersSelectorTable({
   setSelectedUserIds,
 }: UsersSelectorTableProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
-  const [allUsers, setAllUsers] = useState<Map<number, User>>(new Map()); // Use Map for efficient lookups
-  
+  const [allUsers, setAllUsers] = useState<Map<number, User>>(new Map());
+
   // Fetch paginated users for the table
   const {
     data: usersData,
@@ -31,58 +31,61 @@ export default function UsersSelectorTable({
     isLoading: isLoadingSelected
   } = useSelectedUsers(selectedUserIds);
 
-  // Update allUsers Map when new data comes in
+  // Memoized function to update allUsers Map
+  const updateUsersMap = useCallback((users: User[], prevUsers: Map<number, User>) => {
+    const newUsers = new Map(prevUsers);
+    users.forEach(user => {
+      newUsers.set(user.id, user);
+    });
+    return newUsers;
+  }, []);
+
+  // Update allUsers Map with paginated users
   useEffect(() => {
     if (usersData?.data) {
-      setAllUsers(prevUsers => {
-        const newUsers = new Map(prevUsers);
-        usersData.data.forEach(user => {
-          newUsers.set(user.id, user);
-        });
-        return newUsers;
-      });
+      setAllUsers(prevUsers => updateUsersMap(usersData.data, prevUsers));
     }
-  }, [usersData]);
+  }, [usersData, updateUsersMap]);
 
-  // Add selected users to allUsers Map
+  // Update allUsers Map with selected users and validate selections
   useEffect(() => {
     if (selectedUsersData?.data) {
-      setAllUsers(prevUsers => {
-        const newUsers = new Map(prevUsers);
-        selectedUsersData.data.forEach(user => {
-          newUsers.set(user.id, user);
-        });
-        return newUsers;
+      setAllUsers(prevUsers => updateUsersMap(selectedUsersData.data, prevUsers));
+    }
+  }, [selectedUsersData, updateUsersMap]);
+
+  // Validate selected users when data changes
+  useEffect(() => {
+    if (!isLoadingUsers && !isLoadingSelected && selectedUsersData?.data) {
+      const validUserIds = new Set(selectedUsersData.data.map(user => user.id));
+      
+      setSelectedUserIds(prev => {
+        const validSelection = prev.filter(id => validUserIds.has(id));
+        return validSelection.length === prev.length ? prev : validSelection;
       });
     }
-  }, [selectedUsersData]);
+  }, [isLoadingUsers, isLoadingSelected, selectedUsersData, setSelectedUserIds]);
 
-  // Clean up non-existent users from selection
-  useEffect(() => {
-    const nonExistentUsers = selectedUserIds.filter(id => !allUsers.has(id));
-    if (nonExistentUsers.length > 0) {
-      setSelectedUserIds(prev => prev.filter(id => allUsers.has(id)));
-    }
-  }, [selectedUserIds, allUsers, setSelectedUserIds]);
-
-  const handlePageChange = (ev: MouseEvent<HTMLButtonElement>, url: string | null) => {
-    ev.preventDefault(); // Prevent navigation
+  const handlePageChange = useCallback((ev: MouseEvent<HTMLButtonElement>, url: string | null) => {
+    ev.preventDefault();
     if (url) {
       const page = new URL(url).searchParams.get("page");
       setCurrentPage(Number(page));
     }
-  };
+  }, []);
 
-  const toggleUserSelection = (id: number) => {
-    setSelectedUserIds((prevIds: number[]) =>
+  const toggleUserSelection = useCallback((id: number) => {
+    setSelectedUserIds(prevIds => 
       prevIds.includes(id)
-        ? prevIds.filter((uid: number) => uid !== id)
+        ? prevIds.filter(uid => uid !== id)
         : [...prevIds, id]
     );
-  };
+  }, [setSelectedUserIds]);
 
   // Get user data by ID from allUsers Map
-  const getUserById = (id: number): User | undefined => allUsers.get(id);
+  const getUserById = useCallback((id: number): User | undefined => 
+    allUsers.get(id)
+  , [allUsers]);
 
   // Show loading state if either users or selected users are loading
   if (isLoadingUsers || isLoadingSelected) {
@@ -112,7 +115,7 @@ export default function UsersSelectorTable({
       {/* Show selected users summary */}
       {selectedUserIds.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Selected Users ({selectedUserIds.filter(id => getUserById(id)).length})</h4>
+          <h4 className="text-sm font-medium text-gray-700">Selected Users ({selectedUserIds.length})</h4>
           <div className="flex flex-wrap gap-2">
             {selectedUserIds.map(id => {
               const user = getUserById(id);

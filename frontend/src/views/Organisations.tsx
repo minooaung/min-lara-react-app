@@ -1,19 +1,17 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { debounce } from "lodash";
 import { useOrganisations, useDeleteOrganisation } from "../hooks/queries/useOrganisations";
 import { Organisation, PaginationLink } from "../types";
-import { AxiosError } from "axios";
 
-interface ApiErrorResponse {
-  error?: string;
-  message?: string;
+interface ValidationErrors {
+  [key: string]: string[];
 }
 
 export default function Organisations(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [displayErrors, setDisplayErrors] = useState<ValidationErrors | null>(null);
   
   const { 
     data: organisationsData,
@@ -21,6 +19,18 @@ export default function Organisations(): JSX.Element {
   } = useOrganisations(currentPage, searchQuery);
 
   const deleteOrganisationMutation = useDeleteOrganisation();
+
+  // Effect to handle auto-dismissing errors
+  useEffect(() => {
+    if (deleteOrganisationMutation.error) {
+      const error = deleteOrganisationMutation.error as unknown as ValidationErrors;
+      setDisplayErrors(error);
+      const timer = setTimeout(() => {
+        setDisplayErrors(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteOrganisationMutation.error]);
 
   const handlePageChange = (url: string | null) => {
     if (url) {
@@ -41,14 +51,10 @@ export default function Organisations(): JSX.Element {
     }
 
     try {
-      setError(null);
       await deleteOrganisationMutation.mutateAsync(org.id);
     } catch (err) {
-      // Get error message from response or use a default message
-      const error = err as AxiosError<ApiErrorResponse>;
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to delete organisation';
-      setError(errorMessage);
-      setTimeout(() => setError(null), 3000);
+      // Error handling is done in the mutation hooks
+      console.error("Failed to delete organisation:", err);
     }
   };
 
@@ -85,11 +91,15 @@ export default function Organisations(): JSX.Element {
         </div>
       )}
       
-      {error && (
+      {displayErrors && (
         <div className="rounded-md bg-red-100 p-4 mb-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">{error}</h3>
+              {Object.entries(displayErrors).map(([key, value]) => (
+                <p key={key} className="text-sm font-medium text-red-800">
+                  {Array.isArray(value) ? value[0] : value}
+                </p>
+              ))}
             </div>
           </div>
         </div>

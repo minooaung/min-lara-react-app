@@ -1,20 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { debounce } from "lodash";
 import { useUsers, useDeleteUser } from "../hooks/queries/useUsers";
 import { User, PaginationLink } from "../types";
-import { AxiosError } from "axios";
 
-interface ApiErrorResponse {
-  error?: string;
-  message?: string;
-  general?: string[];
+interface ValidationErrors {
+  [key: string]: string[];
 }
 
 export default function Users(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [displayErrors, setDisplayErrors] = useState<ValidationErrors | null>(null);
   
   const { 
     data: usersData,
@@ -22,6 +19,18 @@ export default function Users(): JSX.Element {
   } = useUsers(currentPage, searchQuery);
 
   const deleteUserMutation = useDeleteUser();
+
+  // Effect to handle auto-dismissing errors
+  useEffect(() => {
+    if (deleteUserMutation.error) {
+      const error = deleteUserMutation.error as unknown as ValidationErrors;
+      setDisplayErrors(error);
+      const timer = setTimeout(() => {
+        setDisplayErrors(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteUserMutation.error]);
 
   const handlePageChange = (url: string | null) => {
     if (url) {
@@ -42,13 +51,10 @@ export default function Users(): JSX.Element {
     }
 
     try {
-      setError(null);
       await deleteUserMutation.mutateAsync(u.id);
     } catch (err) {
-      const error = err as AxiosError<ApiErrorResponse>;
-      const errorMessage = error.response?.data?.general?.[0] || error.response?.data?.error || error.response?.data?.message || "Failed to delete user";
-      setError(errorMessage);
-      setTimeout(() => setError(null), 3000);
+      // Error handling is done in the mutation hooks
+      console.error("Failed to delete user:", err);
     }
   };
 
@@ -86,11 +92,15 @@ export default function Users(): JSX.Element {
         </div>
       )}
       
-      {error && (
+      {displayErrors && (
         <div className="rounded-md bg-red-100 p-4 mb-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">{error}</h3>
+              {Object.entries(displayErrors).map(([key, value]) => (
+                <p key={key} className="text-sm font-medium text-red-800">
+                  {Array.isArray(value) ? value[0] : value}
+                </p>
+              ))}
             </div>
           </div>
         </div>

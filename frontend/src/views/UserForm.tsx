@@ -56,8 +56,12 @@ export default function UserForm(): JSX.Element {
   }, [userData]);
 
   // Effect to refetch data when id changes
+  // When navigating between different user edit pages (different IDs)
+  // When the form needs to refresh data after updates
+  // It ensures the form always shows the latest user data
   useEffect(() => {
     if (id) {
+      //console.log('id >> ', id);
       refetchUser();
     }
   }, [id, refetchUser]);
@@ -87,8 +91,8 @@ export default function UserForm(): JSX.Element {
           console.log("Updated logged-in user:", response);
         }
 
-        // Force a refetch after update
-        await refetchUser();
+        // Navigate to users list
+        navigate("/users");
       } else {
         await createUserMutation.mutateAsync({
           ...user,
