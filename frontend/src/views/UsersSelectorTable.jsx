@@ -7,26 +7,24 @@ export default function UsersSelectorTable({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [allUsers, setAllUsers] = useState(new Map()); // Use Map for efficient lookups
-  
+
   // Fetch paginated users for the table
   const {
     data: usersData,
     isLoading: isLoadingUsers,
-    error: usersError
+    error: usersError,
   } = useUsers(currentPage, "");
 
   // Fetch all selected users' data
-  const {
-    data: selectedUsersData,
-    isLoading: isLoadingSelected
-  } = useSelectedUsers(selectedUserIds);
+  const { data: selectedUsersData, isLoading: isLoadingSelected } =
+    useSelectedUsers(selectedUserIds);
 
   // Update allUsers Map when new data comes in
   useEffect(() => {
     if (usersData?.data) {
-      setAllUsers(prevUsers => {
+      setAllUsers((prevUsers) => {
         const newUsers = new Map(prevUsers);
-        usersData.data.forEach(user => {
+        usersData.data.forEach((user) => {
           newUsers.set(user.id, user);
         });
         return newUsers;
@@ -37,15 +35,34 @@ export default function UsersSelectorTable({
   // Add selected users to allUsers Map
   useEffect(() => {
     if (selectedUsersData?.data) {
-      setAllUsers(prevUsers => {
+      setAllUsers((prevUsers) => {
         const newUsers = new Map(prevUsers);
-        selectedUsersData.data.forEach(user => {
+        selectedUsersData.data.forEach((user) => {
           newUsers.set(user.id, user);
         });
         return newUsers;
       });
     }
   }, [selectedUsersData]);
+
+  // Validate selected users when data changes
+  useEffect(() => {
+    if (!isLoadingUsers && !isLoadingSelected && selectedUsersData?.data) {
+      const validUserIds = new Set(
+        selectedUsersData.data.map((user) => user.id)
+      );
+
+      setSelectedUserIds((prev) => {
+        const validSelection = prev.filter((id) => validUserIds.has(id));
+        return validSelection.length === prev.length ? prev : validSelection;
+      });
+    }
+  }, [
+    isLoadingUsers,
+    isLoadingSelected,
+    selectedUsersData,
+    setSelectedUserIds,
+  ]);
 
   const handlePageChange = (ev, url) => {
     ev.preventDefault(); // Prevent navigation
@@ -82,7 +99,9 @@ export default function UsersSelectorTable({
           <div className="flex">
             <div className="ml-3">
               {Object.keys(usersError).map((key) => (
-                <p key={key} className="text-sm font-medium text-red-800">{usersError[key][0]}</p>
+                <p key={key} className="text-sm font-medium text-red-800">
+                  {usersError[key][0]}
+                </p>
               ))}
             </div>
           </div>
@@ -92,28 +111,25 @@ export default function UsersSelectorTable({
       {/* Show selected users summary */}
       {selectedUserIds.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Selected Users ({selectedUserIds.filter(id => getUserById(id)).length})</h4>
+          <h4 className="text-sm font-medium text-gray-700">
+            Selected Users ({selectedUserIds.length})
+          </h4>
           <div className="flex flex-wrap gap-2">
-            {selectedUserIds.map(id => {
+            {selectedUserIds.map((id) => {
               const user = getUserById(id);
-              if (!user) {
-                // If a selected user doesn't exist anymore, remove it from the selection
-                setSelectedUserIds(prev => prev.filter(uid => uid !== id));
-                return null;
-              }
+              if (!user) return null;
               return (
-                <div 
-                  key={id} 
+                <div
+                  key={id}
                   className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                 >
                   {user.name}
-                  <button 
+                  <button
                     onClick={() => toggleUserSelection(id)}
                     className="ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-600 focus:outline-none"
                     title="Remove user"
                   >
-                    <span className="sr-only">Remove {user.name}</span>
-                    ×
+                    <span className="sr-only">Remove {user.name}</span>×
                   </button>
                 </div>
               );
@@ -128,12 +144,30 @@ export default function UsersSelectorTable({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="w-12 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
+                  <th
+                    scope="col"
+                    className="w-12 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
+                  >
                     <span className="sr-only">Select</span>
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Name</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Role</th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Email
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Role
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -149,9 +183,15 @@ export default function UsersSelectorTable({
                         />
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900">{user.name}</td>
-                    <td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900">{user.email}</td>
-                    <td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900">{user.role}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900">
+                      {user.name}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900">
+                      {user.email}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900">
+                      {user.role}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -160,11 +200,9 @@ export default function UsersSelectorTable({
 
           {/* Pagination */}
           <div className="px-4 py-2 flex items-center justify-between sm:px-6">
-
             {/* Mobile pagination */}
             <div className="flex-1 flex justify-between sm:hidden">
               {usersData.meta.links.map((link, index) => {
-
                 // Rendering the Previous button
                 if (link.label === "&laquo; Previous") {
                   return (
@@ -200,20 +238,28 @@ export default function UsersSelectorTable({
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{usersData.meta.from}</span> to{" "}
+                  Showing{" "}
+                  <span className="font-medium">{usersData.meta.from}</span> to{" "}
                   <span className="font-medium">{usersData.meta.to}</span> of{" "}
-                  <span className="font-medium">{usersData.meta.total}</span> users
+                  <span className="font-medium">{usersData.meta.total}</span>{" "}
+                  users
                   {selectedUserIds.length > 0 && (
                     <span className="ml-1">
-                      (<span className="font-medium">{selectedUserIds.length}</span> selected)
+                      (
+                      <span className="font-medium">
+                        {selectedUserIds.length}
+                      </span>{" "}
+                      selected)
                     </span>
                   )}
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   {usersData.meta.links.map((link, index) => {
-
                     // Rendering the Previous button
                     if (link.label === "&laquo; Previous") {
                       return (
@@ -224,8 +270,18 @@ export default function UsersSelectorTable({
                           className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                         >
                           <span className="sr-only">Previous</span>
-                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </button>
                       );
@@ -241,8 +297,18 @@ export default function UsersSelectorTable({
                           className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                         >
                           <span className="sr-only">Next</span>
-                          <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </button>
                       );
@@ -256,13 +322,15 @@ export default function UsersSelectorTable({
                         disabled={!link.url}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                           link.active
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' // Style for Active page
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50' // Style for Inactive page
-                        } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600" // Style for Active page
+                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" // Style for Inactive page
+                        } ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
-                        {link.label === "&laquo; Previous" ? "Previous" : 
-                         link.label === "Next &raquo;" ? "Next" : 
-                         link.label}
+                        {link.label === "&laquo; Previous"
+                          ? "Previous"
+                          : link.label === "Next &raquo;"
+                          ? "Next"
+                          : link.label}
                       </button>
                     );
                   })}
