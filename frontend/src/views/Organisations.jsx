@@ -1,16 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { debounce } from "lodash";
-import { useOrganisations, useDeleteOrganisation } from "../hooks/queries/useOrganisations";
+import {
+  useOrganisations,
+  useDeleteOrganisation,
+} from "../hooks/queries/useOrganisations";
+import ErrorAlert from "../utils/ErrorAlert";
 
 export default function Organisations() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState(null);
-  
-  const { 
+  const [visibleError, setVisibleError] = useState(null);
+
+  const {
     data: organisationsData,
-    isLoading
+    isLoading,
+    error: organisationsQueryError,
   } = useOrganisations(currentPage, searchQuery);
 
   const deleteOrganisationMutation = useDeleteOrganisation();
@@ -34,21 +39,31 @@ export default function Organisations() {
     }
 
     try {
-      setError(null);
       await deleteOrganisationMutation.mutateAsync(org.id);
     } catch (err) {
-      // Get error message from response or use a default message
-      const errorMessage = err.response?.data?.error || 'Failed to delete organisation';
-      setError(errorMessage);
-      setTimeout(() => setError(null), 3000);
+      // Error handling is done in the mutation hooks
+      console.error("Delete failed:", err);
     }
   };
+
+  useEffect(() => {
+    const mergedError =
+      organisationsQueryError || deleteOrganisationMutation.error;
+    if (mergedError) {
+      setVisibleError(mergedError);
+      // Automatically clear the error after 3 seconds
+      const timeout = setTimeout(() => setVisibleError(null), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [organisationsQueryError, deleteOrganisationMutation.error]);
 
   return (
     <div>
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">All Organisations</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            All Organisations
+          </h1>
         </div>
         <div>
           <Link
@@ -67,7 +82,7 @@ export default function Organisations() {
           id="search"
           className="block w-72 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           placeholder="Type to search organisations..."
-          onChange={ev => handleSearchChange(ev.target.value)}
+          onChange={(ev) => handleSearchChange(ev.target.value)}
         />
       </div>
 
@@ -76,16 +91,8 @@ export default function Organisations() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       )}
-      
-      {error && (
-        <div className="rounded-md bg-red-100 p-4 mb-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">{error}</h3>
-            </div>
-          </div>
-        </div>
-      )}
+
+      <ErrorAlert error={visibleError} />
 
       {!isLoading && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200">
@@ -93,10 +100,30 @@ export default function Organisations() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">ID</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Name</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Users Count</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Create Date</th>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
+                  >
+                    ID
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Users Count
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Create Date
+                  </th>
                   <th scope="col" className="relative py-3.5 pl-3 pr-4">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -104,21 +131,29 @@ export default function Organisations() {
               </thead>
               {organisationsData && (
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {organisationsData.data.map(org => (
+                  {organisationsData.data.map((org) => (
                     <tr key={org.id} className="hover:bg-gray-50">
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-700">{org.id}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{org.name}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{org.users_count}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{org.created_at}</td>
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-700">
+                        {org.id}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {org.name}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {org.users_count}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {org.created_at}
+                      </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-base font-medium">
-                        <Link 
-                          to={'/organisations/' + org.id} 
+                        <Link
+                          to={"/organisations/" + org.id}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Edit
                         </Link>
                         <button
-                          onClick={ev => onDelete(org)}
+                          onClick={(ev) => onDelete(org)}
                           className="text-red-600 hover:text-red-900"
                         >
                           Delete
@@ -167,13 +202,26 @@ export default function Organisations() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{organisationsData.meta.from}</span> to{" "}
-                      <span className="font-medium">{organisationsData.meta.to}</span> of{" "}
-                      <span className="font-medium">{organisationsData.meta.total}</span> organisations
+                      Showing{" "}
+                      <span className="font-medium">
+                        {organisationsData.meta.from}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {organisationsData.meta.to}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {organisationsData.meta.total}
+                      </span>{" "}
+                      organisations
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       {organisationsData.meta.links.map((link, index) => {
                         if (link.label === "&laquo; Previous") {
                           return (
@@ -184,8 +232,18 @@ export default function Organisations() {
                               className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                             >
                               <span className="sr-only">Previous</span>
-                              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                              <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </button>
                           );
@@ -199,8 +257,18 @@ export default function Organisations() {
                               className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                             >
                               <span className="sr-only">Next</span>
-                              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                              <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </button>
                           );
@@ -212,11 +280,15 @@ export default function Organisations() {
                             disabled={!link.url}
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               link.active
-                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            } ${
+                              !link.url ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
                           >
-                            <span dangerouslySetInnerHTML={{__html: link.label}}></span>
+                            <span
+                              dangerouslySetInnerHTML={{ __html: link.label }}
+                            ></span>
                           </button>
                         );
                       })}
