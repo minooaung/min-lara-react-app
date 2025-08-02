@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { debounce } from "lodash";
 import { useUsers, useDeleteUser } from "../hooks/queries/useUsers";
+import ErrorAlert from "../utils/ErrorAlert";
 
 export default function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState(null);
-  
-  const { 
+  const [visibleError, setVisibleError] = useState(null);
+
+  const {
     data: usersData,
-    isLoading
+    isLoading,
+    error: usersQueryError,
   } = useUsers(currentPage, searchQuery);
 
   const deleteUserMutation = useDeleteUser();
@@ -34,20 +36,28 @@ export default function Users() {
     }
 
     try {
-      setError(null);
       await deleteUserMutation.mutateAsync(u.id);
     } catch (err) {
-      setError(err.general[0]);
-      setTimeout(() => setError(null), 3000);
+      // Error handling is done in the mutation hooks
+      console.error("Delete failed:", err);
     }
   };
+
+  useEffect(() => {
+    const mergedError = usersQueryError || deleteUserMutation.error;
+    if (mergedError) {
+      setVisibleError(mergedError);
+      // Automatically clear the error after 3 seconds
+      const timeout = setTimeout(() => setVisibleError(null), 3000); // Clear error after 5 seconds
+      return () => clearTimeout(timeout);
+    }
+  }, [usersQueryError, deleteUserMutation.error]);
 
   return (
     <div>
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">All Users</h1>
-          
         </div>
         <div>
           <Link
@@ -66,7 +76,7 @@ export default function Users() {
           id="search"
           className="block w-72 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           placeholder="Type to search users..."
-          onChange={ev => handleSearchChange(ev.target.value)}
+          onChange={(ev) => handleSearchChange(ev.target.value)}
         />
       </div>
 
@@ -75,16 +85,8 @@ export default function Users() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       )}
-      
-      {error && (
-        <div className="rounded-md bg-red-100 p-4 mb-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">{error}</h3>
-            </div>
-          </div>
-        </div>
-      )}
+
+      <ErrorAlert error={visibleError} />
 
       {!isLoading && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200">
@@ -92,11 +94,36 @@ export default function Users() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">ID</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Name</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Role</th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Create Date</th>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
+                  >
+                    ID
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Email
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Role
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Create Date
+                  </th>
                   <th scope="col" className="relative py-3.5 pl-3 pr-4">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -104,22 +131,32 @@ export default function Users() {
               </thead>
               {usersData && (
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {usersData.data.map(u => (
+                  {usersData.data.map((u) => (
                     <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-700">{u.id}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{u.name}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{u.email}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{u.role}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">{u.created_at}</td>
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-700">
+                        {u.id}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {u.name}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {u.email}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {u.role}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
+                        {u.created_at}
+                      </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-base font-medium">
-                        <Link 
-                          to={'/users/' + u.id} 
+                        <Link
+                          to={"/users/" + u.id}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Edit
                         </Link>
                         <button
-                          onClick={ev => onDelete(u)}
+                          onClick={(ev) => onDelete(u)}
                           className="text-red-600 hover:text-red-900"
                         >
                           Delete
@@ -136,11 +173,9 @@ export default function Users() {
           {usersData && (
             <div>
               <div className="px-4 py-2 flex items-center justify-between sm:px-6">
-
                 {/* Mobile pagination */}
                 <div className="flex-1 flex justify-between sm:hidden">
                   {usersData.meta.links.map((link, index) => {
-
                     // Rendering the Previous button
                     if (link.label === "&laquo; Previous") {
                       return (
@@ -176,15 +211,23 @@ export default function Users() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{usersData.meta.from}</span> to{" "}
-                      <span className="font-medium">{usersData.meta.to}</span> of{" "}
-                      <span className="font-medium">{usersData.meta.total}</span> users
+                      Showing{" "}
+                      <span className="font-medium">{usersData.meta.from}</span>{" "}
+                      to{" "}
+                      <span className="font-medium">{usersData.meta.to}</span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {usersData.meta.total}
+                      </span>{" "}
+                      users
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       {usersData.meta.links.map((link, index) => {
-
                         // Rendering the Previous button
                         if (link.label === "&laquo; Previous") {
                           return (
@@ -195,8 +238,18 @@ export default function Users() {
                               className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                             >
                               <span className="sr-only">Previous</span>
-                              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                              <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </button>
                           );
@@ -212,8 +265,18 @@ export default function Users() {
                               className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                             >
                               <span className="sr-only">Next</span>
-                              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                              <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </button>
                           );
@@ -227,11 +290,15 @@ export default function Users() {
                             disabled={!link.url}
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               link.active
-                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            } ${
+                              !link.url ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
                           >
-                            <span dangerouslySetInnerHTML={{__html: link.label}}></span>
+                            <span
+                              dangerouslySetInnerHTML={{ __html: link.label }}
+                            ></span>
                           </button>
                         );
                       })}
