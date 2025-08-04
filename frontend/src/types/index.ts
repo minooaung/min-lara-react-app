@@ -1,5 +1,5 @@
 // User related types
-export type UserRole = 'ADMIN' | 'EMPLOYEE';
+export type UserRole = "ADMIN" | "EMPLOYEE";
 
 export interface User {
   id: number;
@@ -11,6 +11,10 @@ export interface User {
   formatted_created_at?: string;
   formatted_updated_at?: string;
   organisations?: Organisation[];
+}
+
+export interface AuthResponseBase {
+  user: User;
 }
 
 // Organisation related types
@@ -113,4 +117,4 @@ interface DashboardData {
 export interface DashboardResponse {
   success: boolean;
   data: DashboardData;
-} 
+}
