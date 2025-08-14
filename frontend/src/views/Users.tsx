@@ -164,7 +164,7 @@ export default function Users(): JSX.Element {
                       {u.role}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-700">
-                      {u.formatted_created_at}
+                      {u.created_at}
                     </td>
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-base font-medium">
                       <Link

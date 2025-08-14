@@ -90,9 +90,11 @@ interface DashboardStats {
   totalOrganizations: number;
   adminUsers: number;
   activeOrganizations: number;
+  superAdminUsers?: number;
 }
 
 interface UserRoles {
+  superAdminCount?: number;
   adminCount: number;
   employeeCount: number;
 }

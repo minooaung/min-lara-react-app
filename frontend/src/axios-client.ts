@@ -1,4 +1,9 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+import axios, {
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  AxiosResponse,
+  AxiosError,
+} from "axios";
 
 import store from "./store/index";
 import { authActions } from "./store/auth";
@@ -32,9 +37,11 @@ axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   config.headers["Content-Type"] = "application/json";
 
   // ✅ Attach CSRF token from cookie (for Sanctum)
-  const xsrfToken = getCookie("XSRF-TOKEN");
-  if (xsrfToken) {
-    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+  if (import.meta.env.VITE_BACKEND_FRAMEWORK === "laravel") {
+    const xsrfToken = getCookie("XSRF-TOKEN");
+    if (xsrfToken) {
+      config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
+    }
   }
 
   return config;
@@ -71,6 +78,9 @@ axiosClient.interceptors.response.use(
 );
 
 // Call CSRF initialization when app starts
-initializeCsrfToken();
+if (import.meta.env.VITE_BACKEND_FRAMEWORK === "laravel") {
+  console.log("Initializing CSRF token for Laravel backend");
+  initializeCsrfToken();
+}
 
-export default axiosClient; 
+export default axiosClient;

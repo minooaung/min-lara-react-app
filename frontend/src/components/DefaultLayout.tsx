@@ -13,17 +13,43 @@ export default function DefaultLayout(): JSX.Element {
   );
   const { mutate: logout } = useLogout();
 
-  // Periodically refresh session every 5 minutes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log("Session refreshed");
-      axiosClient.get("/user").catch(() => {
-        logout();
-      });
-    }, 5 * 60 * 1000);
+  if (import.meta.env.VITE_BACKEND_FRAMEWORK === "laravel") {
+    // Periodically refresh session every 5 minutes
+    // useEffect(() => {
+    //   const interval = setInterval(() => {
+    //     console.log("Session refreshed");
+    //     axiosClient.get("/user").catch(() => {
+    //       logout();
+    //     });
+    //   }, 5 * 60 * 1000);
 
-    return () => clearInterval(interval);
-  }, [logout]);
+    //   return () => clearInterval(interval);
+    // }, [logout]);
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        axiosClient
+          .get("/user")
+          .then(() => {
+            console.log("Session refreshed successfully");
+          })
+          .catch((error) => {
+            // Only logout if it's an authentication error (401)
+            if (error.response && error.response.status === 401) {
+              console.log("Session expired, logging out");
+              logout();
+            } else {
+              console.warn(
+                "Session refresh failed, will retry next interval",
+                error
+              );
+            }
+          });
+      }, 5 * 60 * 1000); // 5 minutes
+
+      return () => clearInterval(interval);
+    }, [logout]);
+  }
 
   const onLogout = (ev: MouseEvent<HTMLButtonElement>): void => {
     ev.preventDefault();
@@ -39,42 +65,36 @@ export default function DefaultLayout(): JSX.Element {
       {/* Sidebar */}
       <aside className="w-64 bg-blue-600 text-white p-6">
         <nav className="space-y-2">
-          <Link 
-            to="/dashboard" 
+          <Link
+            to="/dashboard"
             className={`block px-4 py-2 rounded-lg transition-colors ${
-              isActive('/dashboard') 
-                ? 'bg-blue-700 text-white font-medium' 
-                : ''
+              isActive("/dashboard") ? "bg-blue-700 text-white font-medium" : ""
             }`}
           >
             Dashboard
           </Link>
-          <Link 
-            to="/users" 
+          <Link
+            to="/users"
             className={`block px-4 py-2 rounded-lg transition-colors ${
-              isActive('/users') 
-                ? 'bg-blue-700 text-white font-medium' 
-                : ''
+              isActive("/users") ? "bg-blue-700 text-white font-medium" : ""
             }`}
           >
             Users
           </Link>
-          <Link 
-            to="/organisations" 
+          <Link
+            to="/organisations"
             className={`block px-4 py-2 rounded-lg transition-colors ${
-              isActive('/organisations') 
-                ? 'bg-blue-700 text-white font-medium' 
-                : ''
+              isActive("/organisations")
+                ? "bg-blue-700 text-white font-medium"
+                : ""
             }`}
           >
             Organisations
           </Link>
-          <Link 
-            to="/report" 
+          <Link
+            to="/report"
             className={`block px-4 py-2 rounded-lg transition-colors ${
-              isActive('/report') 
-                ? 'bg-blue-700 text-white font-medium' 
-                : ''
+              isActive("/report") ? "bg-blue-700 text-white font-medium" : ""
             }`}
           >
             Report
@@ -89,7 +109,9 @@ export default function DefaultLayout(): JSX.Element {
               {/* Page title will go here from child components */}
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700 font-medium">{reduxUser?.name}</span>
+              <span className="text-gray-700 font-medium">
+                {reduxUser?.name}
+              </span>
               <button
                 onClick={onLogout}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -112,4 +134,4 @@ export default function DefaultLayout(): JSX.Element {
       )}
     </div>
   );
-} 
+}
