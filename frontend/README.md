@@ -50,6 +50,7 @@ src/
 The application features a comprehensive dashboard that provides:
 
 ### Features
+
 - Real-time statistics and metrics
 - Interactive charts and visualizations
 - Organization growth tracking
@@ -58,6 +59,7 @@ The application features a comprehensive dashboard that provides:
 - Key performance indicators (KPIs)
 
 ### Charts and Visualizations
+
 - Organization Growth Chart - Track organization creation over time
 - User Role Distribution - Visual breakdown of user roles
 - Activity metrics and trends
@@ -68,10 +70,12 @@ The application features a comprehensive dashboard that provides:
 The application includes a powerful reporting system that allows users to generate various types of reports:
 
 ### Report Types
+
 - Users Report - Detailed information about system users
 - Organizations Report - Overview of registered organizations
 
 ### Output Formats
+
 - PDF - For professional document presentation
 - Excel - For data analysis and manipulation
 - CSV - For raw data export
@@ -79,6 +83,7 @@ The application includes a powerful reporting system that allows users to genera
 - HTML - For web viewing with print capability
 
 ### Features
+
 - Interactive report generation interface
 - Real-time HTML preview
 - Direct file downloads
@@ -95,7 +100,17 @@ The application includes a powerful reporting system that allows users to genera
 
 2. Create `.env` file in the frontend root:
 
+   To run along with ASP.Net Core Web API, add the following
+
    ```env
+   VITE_BACKEND_FRAMEWORK=ASP.NET
+   VITE_API_BASE_URL=http://localhost:5003
+   ```
+
+   To run along with Laravel REST API, add the following
+
+   ```env
+   VITE_BACKEND_FRAMEWORK=laravel
    VITE_API_BASE_URL=http://localhost:8000
    ```
 
