@@ -119,6 +119,8 @@ export default function UserForm(): JSX.Element {
     createUserMutation.error ||
     updateUserMutation.error) as ValidationErrors | null;
 
+  const isAspNet = import.meta.env.VITE_BACKEND_FRAMEWORK === "ASP.NET";
+
   return (
     <div>
       <div className="flex justify-between items-start mb-6">
@@ -213,6 +215,7 @@ export default function UserForm(): JSX.Element {
                 <option value="" disabled>
                   Select Role
                 </option>
+                {isAspNet && <option value="SUPERADMIN">Super Admin</option>}
                 <option value="ADMIN">Admin</option>
                 <option value="EMPLOYEE">Employee</option>
               </select>
