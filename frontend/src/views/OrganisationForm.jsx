@@ -81,6 +81,11 @@ export default function OrganisationForm() {
 
   const onCancel = () => navigate("/organisations");
 
+  const validationErrors =
+    orgError ||
+    createOrganisationMutation.error ||
+    updateOrganisationMutation.error;
+
   if (isLoadingOrg) {
     return (
       <div className="text-center py-4">
@@ -97,13 +102,7 @@ export default function OrganisationForm() {
         </h1>
       </div>
 
-      <ErrorAlert
-        error={
-          orgError ||
-          createOrganisationMutation.error ||
-          updateOrganisationMutation.error
-        }
-      />
+      {validationErrors && <ErrorAlert error={validationErrors} />}
 
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <form onSubmit={onSubmit} className="space-y-6">
