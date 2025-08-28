@@ -93,6 +93,9 @@ export default function UserForm() {
 
   const onCancel = () => navigate("/users");
 
+  const validationErrors =
+    userError || createUserMutation.error || updateUserMutation.error;
+
   return (
     <div>
       <div className="flex justify-between items-start mb-6">
@@ -107,11 +110,7 @@ export default function UserForm() {
         </div>
       )}
 
-      <ErrorAlert
-        error={
-          userError || createUserMutation.error || updateUserMutation.error
-        }
-      />
+      {validationErrors && <ErrorAlert error={validationErrors} />}
 
       {!isLoadingUser && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">

@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSignup } from "../hooks/queries/useAuth";
+import ErrorAlert from "../utils/ErrorAlert";
 
 export default function Signup() {
   const nameRef = useRef();
@@ -23,7 +24,7 @@ export default function Signup() {
 
     try {
       await signupMutation.mutateAsync(payload);
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       // Error handling is done in the mutation hook
       console.error("Signup failed:", err);
@@ -33,37 +34,43 @@ export default function Signup() {
   return (
     <div className="w-[360px] bg-white p-8 shadow-sm relative z-10 animated fadeInDown">
       <form onSubmit={onSubmit}>
-        <h1 className="text-xl mb-4 text-center font-bold text-gray-900">Create an account</h1>
+        <h1 className="text-xl mb-4 text-center font-bold text-gray-900">
+          Create an account
+        </h1>
 
         {signupMutation.error && (
+          <ErrorAlert error={signupMutation.error} variant="auth" />
+        )}
+
+        {/* {signupMutation.error && (
           <div className="bg-red-500 text-white p-4 rounded-lg mb-4">
             {Object.keys(signupMutation.error).map((key) => (
               <p key={key}>{signupMutation.error[key][0]}</p>
             ))}
           </div>
-        )}
+        )} */}
 
-        <input 
-          ref={nameRef} 
-          placeholder="Full Name" 
+        <input
+          ref={nameRef}
+          placeholder="Full Name"
           className="w-full border-2 border-gray-200 p-4 mb-4 text-sm transition-all focus:border-purple-700 outline-none"
-          required 
+          required
           autoComplete="name"
         />
-        <input 
-          ref={emailRef} 
-          type="email" 
-          placeholder="Email" 
+        <input
+          ref={emailRef}
+          type="email"
+          placeholder="Email"
           className="w-full border-2 border-gray-200 p-4 mb-4 text-sm transition-all focus:border-purple-700 outline-none"
-          required 
+          required
           autoComplete="username"
         />
-        <input 
-          ref={passwordRef} 
-          type="password" 
-          placeholder="Password" 
+        <input
+          ref={passwordRef}
+          type="password"
+          placeholder="Password"
           className="w-full border-2 border-gray-200 p-4 mb-4 text-sm transition-all focus:border-purple-700 outline-none"
-          required 
+          required
           autoComplete="new-password"
         />
         <input
@@ -74,16 +81,22 @@ export default function Signup() {
           required
           autoComplete="new-password"
         />
-        
-        <button 
+
+        <button
           className="w-full bg-purple-800 text-white py-4 px-4 text-base transition-all hover:bg-purple-900 disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={signupMutation.isPending}
         >
           {signupMutation.isPending ? "Creating account..." : "Signup"}
         </button>
-        
+
         <p className="mt-4 text-center text-gray-400 text-base">
-          Already registered? <Link to="/login" className="text-purple-800 no-underline hover:text-purple-900">Sign in</Link>
+          Already registered?{" "}
+          <Link
+            to="/login"
+            className="text-purple-800 no-underline hover:text-purple-900"
+          >
+            Sign in
+          </Link>
         </p>
       </form>
     </div>
