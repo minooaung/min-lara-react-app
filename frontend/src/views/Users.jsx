@@ -86,7 +86,7 @@ export default function Users() {
         </div>
       )}
 
-      <ErrorAlert error={visibleError} />
+      {visibleError && <ErrorAlert error={visibleError} />}
 
       {!isLoading && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200">
